@@ -3,61 +3,100 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0f766e">
 
   <title>Syria Market | السوق السوري</title>
+  <meta name="description" content="Syria Market - سوق إلكتروني سوري يجمع المنتجات والمتاجر السورية في مكان واحد">
+  <meta name="theme-color" content="#0f766e">
+
   <style>
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: Arial, Tahoma, sans-serif;
+    }
+
+    :root {
+      --primary: #0f766e;
+      --primary-dark: #115e59;
+      --secondary: #f59e0b;
+      --dark: #17202a;
+      --text: #263238;
+      --muted: #6b7280;
+      --light: #f5f7f8;
+      --white: #ffffff;
+      --border: #e5e7eb;
+      --danger: #dc2626;
+      --shadow: 0 8px 25px rgba(0,0,0,.07);
+      --radius: 16px;
     }
 
     body {
-      background: #f6f7f9;
-      color: #172033;
+      font-family:
+        Tahoma,
+        Arial,
+        "Segoe UI",
+        sans-serif;
+      background: #f8fafb;
+      color: var(--text);
+      line-height: 1.7;
     }
 
     button,
-    input {
-      font-family: inherit;
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
     }
 
     a {
-      text-decoration: none;
       color: inherit;
+      text-decoration: none;
     }
 
-    /* HEADER */
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    .container {
+      width: min(1180px, calc(100% - 32px));
+      margin: auto;
+    }
+
+    /* =========================
+       HEADER
+    ========================== */
 
     header {
-      background: white;
+      background: var(--white);
       position: sticky;
       top: 0;
-      z-index: 100;
-      border-bottom: 1px solid #e7e9ee;
+      z-index: 1000;
+      box-shadow: 0 2px 12px rgba(0,0,0,.06);
     }
 
     .topbar {
-      max-width: 1200px;
-      margin: auto;
-      min-height: 72px;
+      min-height: 78px;
       display: flex;
       align-items: center;
-      gap: 20px;
-      padding: 12px 20px;
+      gap: 22px;
+      width: min(1180px, calc(100% - 32px));
+      margin: auto;
     }
 
     .logo {
-      font-size: 23px;
-      font-weight: 800;
-      color: #0f766e;
+      font-size: 27px;
+      font-weight: 900;
+      color: var(--dark);
       white-space: nowrap;
     }
 
     .logo span {
-      color: #1f2937;
+      color: var(--primary);
     }
 
     .search {
@@ -68,175 +107,201 @@
     .search input {
       width: 100%;
       height: 46px;
-      border: 1px solid #dfe3e8;
-      border-radius: 12px;
-      padding: 0 45px 0 15px;
-      font-size: 15px;
+      border: 1px solid var(--border);
+      border-radius: 25px;
+      padding: 0 48px 0 18px;
       outline: none;
       background: #f8fafc;
+      transition: .2s;
     }
 
     .search input:focus {
-      border-color: #0f766e;
+      border-color: var(--primary);
       background: white;
+      box-shadow: 0 0 0 3px rgba(15,118,110,.1);
     }
 
     .search-icon {
       position: absolute;
-      right: 15px;
-      top: 12px;
-      font-size: 20px;
+      right: 18px;
+      top: 9px;
+      font-size: 22px;
+      z-index: 2;
     }
 
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
     .action {
       border: 0;
-      background: #f3f4f6;
-      width: 44px;
-      height: 44px;
+      background: transparent;
+      color: var(--text);
+      min-width: 54px;
+      height: 46px;
       border-radius: 12px;
-      cursor: pointer;
-      font-size: 20px;
       position: relative;
+      font-size: 20px;
+      transition: .2s;
+    }
+
+    .action:hover {
+      background: #f1f5f9;
+    }
+
+    .action span:not(.cart-count) {
+      display: block;
+      font-size: 11px;
+      margin-top: -2px;
     }
 
     .cart-count {
       position: absolute;
-      top: -5px;
-      left: -5px;
-      background: #dc2626;
+      top: 0;
+      right: 3px;
+      background: var(--danger);
       color: white;
-      min-width: 19px;
-      height: 19px;
+      width: 20px;
+      height: 20px;
       border-radius: 50%;
       font-size: 11px;
       display: flex;
       align-items: center;
       justify-content: center;
+      font-weight: bold;
     }
 
-    /* NAVIGATION */
-
     nav {
-      border-top: 1px solid #f0f1f3;
-      overflow-x: auto;
+      border-top: 1px solid #f0f0f0;
       background: white;
     }
 
     .nav-inner {
-      max-width: 1200px;
+      width: min(1180px, calc(100% - 32px));
       margin: auto;
       display: flex;
-      gap: 25px;
-      padding: 13px 20px;
-      white-space: nowrap;
+      align-items: center;
+      gap: 30px;
+      min-height: 45px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .nav-inner::-webkit-scrollbar {
+      display: none;
     }
 
     .nav-inner a {
-      font-size: 14px;
+      white-space: nowrap;
       color: #4b5563;
-      font-weight: 600;
+      font-size: 14px;
+      transition: .2s;
     }
 
     .nav-inner a:hover {
-      color: #0f766e;
+      color: var(--primary);
     }
 
-    /* HERO */
+    /* =========================
+       HERO
+    ========================== */
 
     .hero {
-      max-width: 1200px;
-      margin: 25px auto;
-      padding: 0 20px;
-    }
-
-    .hero-box {
-      min-height: 310px;
+      margin: 28px auto;
+      width: min(1180px, calc(100% - 32px));
+      min-height: 330px;
       border-radius: 24px;
-      padding: 45px;
+      background:
+        linear-gradient(
+          135deg,
+          rgba(15,118,110,.97),
+          rgba(17,94,89,.94)
+        );
+      color: white;
       display: flex;
       align-items: center;
-      background: linear-gradient(135deg, #0f766e, #115e59);
-      color: white;
+      padding: 55px;
       position: relative;
       overflow: hidden;
     }
 
+    .hero::before {
+      content: "";
+      position: absolute;
+      width: 350px;
+      height: 350px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.07);
+      left: -100px;
+      bottom: -180px;
+    }
+
     .hero-content {
-      max-width: 600px;
+      max-width: 680px;
       position: relative;
-      z-index: 2;
+      z-index: 1;
     }
 
     .hero h1 {
-      font-size: 38px;
-      margin-bottom: 15px;
+      font-size: clamp(30px, 5vw, 52px);
       line-height: 1.25;
-    }
-
-    .hero p {
-      color: #d9fffb;
-      font-size: 17px;
-      line-height: 1.8;
-      margin-bottom: 25px;
-    }
-
-    .hero-button {
-      border: 0;
-      background: white;
-      color: #0f766e;
-      padding: 13px 24px;
-      border-radius: 12px;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .hero-decoration {
-      position: absolute;
-      left: -70px;
-      bottom: -100px;
-      width: 300px;
-      height: 300px;
-      border-radius: 50%;
-      background: rgba(255,255,255,.08);
-    }
-
-    /* MAIN */
-
-    main {
-      max-width: 1200px;
-      margin: auto;
-      padding: 0 20px 50px;
-    }
-
-    .section {
-      margin-top: 35px;
-    }
-
-    .section-title {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
       margin-bottom: 18px;
     }
 
-    .section-title h2 {
-      font-size: 22px;
+    .hero p {
+      font-size: 18px;
+      color: rgba(255,255,255,.9);
+      margin-bottom: 28px;
+      max-width: 620px;
     }
 
-    .section-title a {
-      color: #0f766e;
+    .hero-btn {
+      border: 0;
+      background: white;
+      color: var(--primary-dark);
+      padding: 13px 27px;
+      border-radius: 12px;
+      font-weight: 800;
+      transition: .2s;
+    }
+
+    .hero-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0,0,0,.15);
+    }
+
+    /* =========================
+       SECTION
+    ========================== */
+
+    .section {
+      margin: 42px auto;
+      width: min(1180px, calc(100% - 32px));
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 22px;
+    }
+
+    .section-head h2 {
+      font-size: 25px;
+      color: var(--dark);
+    }
+
+    .section-head p {
+      color: var(--muted);
       font-size: 14px;
-      font-weight: 700;
     }
 
-    /* CATEGORIES */
+    /* =========================
+       CATEGORIES
+    ========================== */
 
     .categories {
       display: grid;
@@ -245,267 +310,590 @@
     }
 
     .category {
+      border: 1px solid var(--border);
       background: white;
-      border: 1px solid #e8eaee;
-      border-radius: 16px;
-      padding: 20px 10px;
+      border-radius: var(--radius);
+      padding: 22px 12px;
       text-align: center;
-      cursor: pointer;
       transition: .2s;
+      box-shadow: 0 3px 12px rgba(0,0,0,.03);
     }
 
-    .category:hover {
+    .category:hover,
+    .category.active {
       transform: translateY(-3px);
-      border-color: #0f766e;
+      border-color: var(--primary);
+      box-shadow: var(--shadow);
     }
 
     .category-icon {
-      width: 55px;
-      height: 55px;
-      margin: auto auto 10px;
-      border-radius: 50%;
-      background: #ecfdf5;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 27px;
+      font-size: 35px;
+      margin-bottom: 8px;
     }
 
-    .category span {
+    .category-name {
       font-size: 14px;
       font-weight: 700;
     }
 
-    /* PRODUCTS */
+    /* =========================
+       PRODUCTS
+    ========================== */
 
-    .products {
+    .products-tools {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .sort-select {
+      border: 1px solid var(--border);
+      background: white;
+      border-radius: 10px;
+      padding: 9px 12px;
+      outline: none;
+    }
+
+    .products-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 18px;
     }
 
-    .product {
+    .product-card {
       background: white;
-      border-radius: 18px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
       overflow: hidden;
-      border: 1px solid #e8eaee;
       transition: .2s;
+      box-shadow: 0 4px 15px rgba(0,0,0,.035);
     }
 
-    .product:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 30px rgba(0,0,0,.07);
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow);
     }
 
     .product-image {
       height: 190px;
-      background: #eef2f3;
+      background: linear-gradient(135deg, #eef2f3, #f8fafc);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 65px;
+      font-size: 70px;
+      overflow: hidden;
+    }
+
+    .product-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     .product-info {
-      padding: 15px;
+      padding: 16px;
+    }
+
+    .product-category {
+      font-size: 11px;
+      color: var(--primary);
+      margin-bottom: 5px;
+      font-weight: 700;
     }
 
     .product-name {
-      font-size: 16px;
-      font-weight: 700;
-      margin-bottom: 9px;
+      font-size: 17px;
+      font-weight: 800;
+      margin-bottom: 5px;
+      color: var(--dark);
     }
 
-    .seller {
+    .product-seller {
+      color: var(--muted);
       font-size: 12px;
-      color: #6b7280;
-      margin-bottom: 12px;
+      margin-bottom: 13px;
     }
 
     .product-bottom {
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
+      gap: 8px;
     }
 
-    .price {
-      color: #0f766e;
-      font-weight: 800;
-      font-size: 17px;
+    .product-price {
+      font-weight: 900;
+      color: var(--primary);
+      font-size: 16px;
     }
 
-    .add {
+    .add-btn {
       border: 0;
-      background: #0f766e;
+      background: var(--primary);
       color: white;
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 20px;
+      border-radius: 9px;
+      padding: 8px 11px;
+      font-size: 12px;
+      font-weight: 700;
     }
 
-    /* FEATURES */
+    .add-btn:hover {
+      background: var(--primary-dark);
+    }
+
+    .empty-products {
+      grid-column: 1 / -1;
+      text-align: center;
+      background: white;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 45px 20px;
+      color: var(--muted);
+    }
+
+    .loading {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 45px;
+      color: var(--muted);
+    }
+
+    /* =========================
+       FEATURES
+    ========================== */
 
     .features {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 15px;
+      gap: 16px;
     }
 
     .feature {
       background: white;
-      padding: 22px;
-      border-radius: 16px;
-      border: 1px solid #e8eaee;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 25px 18px;
+      text-align: center;
     }
 
     .feature-icon {
-      font-size: 27px;
-      margin-bottom: 10px;
+      font-size: 35px;
+      margin-bottom: 8px;
     }
 
     .feature h3 {
       font-size: 16px;
-      margin-bottom: 7px;
+      margin-bottom: 5px;
     }
 
     .feature p {
+      color: var(--muted);
       font-size: 13px;
-      color: #6b7280;
-      line-height: 1.6;
     }
 
-    /* FOOTER */
+    /* =========================
+       FOOTER
+    ========================== */
 
     footer {
       background: #111827;
       color: white;
-      margin-top: 30px;
+      margin-top: 60px;
+      padding: 45px 0 20px;
     }
 
-    .footer-inner {
-      max-width: 1200px;
+    .footer-grid {
+      width: min(1180px, calc(100% - 32px));
       margin: auto;
-      padding: 40px 20px;
       display: grid;
       grid-template-columns: 2fr 1fr 1fr 1fr;
       gap: 30px;
     }
 
-    .footer-title {
-      font-size: 20px;
-      font-weight: 800;
-      margin-bottom: 15px;
+    .footer-brand h2 {
+      margin-bottom: 10px;
     }
 
-    .footer-inner p,
-    .footer-inner a {
-      color: #cbd5e1;
+    .footer-brand h2 span {
+      color: #2dd4bf;
+    }
+
+    .footer-brand p,
+    .footer-links a {
+      color: #9ca3af;
       font-size: 13px;
-      line-height: 2;
+    }
+
+    .footer-links h3 {
+      font-size: 15px;
+      margin-bottom: 12px;
+    }
+
+    .footer-links a {
       display: block;
+      margin-bottom: 7px;
+    }
+
+    .footer-links a:hover {
+      color: white;
     }
 
     .copyright {
-      border-top: 1px solid #374151;
-      padding: 15px 20px;
+      width: min(1180px, calc(100% - 32px));
+      margin: 35px auto 0;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255,255,255,.1);
       text-align: center;
-      color: #94a3b8;
+      color: #9ca3af;
       font-size: 12px;
     }
 
-    /* MOBILE */
+    /* =========================
+       MODALS
+    ========================== */
 
-    @media (max-width: 800px) {
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.58);
+      z-index: 3000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+    }
 
-      .topbar {
-        flex-wrap: wrap;
-      }
+    .modal.show {
+      display: flex;
+    }
 
-      .logo {
-        width: 100%;
-        text-align: center;
-      }
+    .modal-box {
+      width: min(480px, 100%);
+      max-height: 90vh;
+      overflow-y: auto;
+      background: white;
+      border-radius: 20px;
+      padding: 25px;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    }
 
-      .search {
-        order: 2;
-      }
+    .modal-large {
+      width: min(700px, 100%);
+    }
 
-      .header-actions {
-        position: absolute;
-        left: 15px;
-        top: 70px;
-      }
+    .modal-close {
+      position: absolute;
+      left: 15px;
+      top: 12px;
+      width: 35px;
+      height: 35px;
+      border: 0;
+      background: #f3f4f6;
+      border-radius: 50%;
+      font-size: 23px;
+      line-height: 1;
+    }
 
-      .hero-box {
-        padding: 30px 25px;
-        min-height: 280px;
-      }
+    .modal-title {
+      text-align: center;
+      margin-bottom: 22px;
+    }
 
-      .hero h1 {
-        font-size: 28px;
-      }
+    .modal-title h2 {
+      color: var(--dark);
+      margin-bottom: 4px;
+    }
 
-      .hero p {
-        font-size: 14px;
-      }
+    .modal-title p {
+      color: var(--muted);
+      font-size: 13px;
+    }
 
+    .form-group {
+      margin-bottom: 13px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .form-control {
+      width: 100%;
+      height: 45px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0 13px;
+      outline: none;
+    }
+
+    textarea.form-control {
+      height: 90px;
+      padding-top: 10px;
+      resize: vertical;
+    }
+
+    .form-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(15,118,110,.1);
+    }
+
+    .primary-btn {
+      width: 100%;
+      height: 46px;
+      border: 0;
+      border-radius: 10px;
+      background: var(--primary);
+      color: white;
+      font-weight: 800;
+      margin-top: 5px;
+    }
+
+    .primary-btn:hover {
+      background: var(--primary-dark);
+    }
+
+    .secondary-btn {
+      width: 100%;
+      height: 44px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: white;
+      margin-top: 9px;
+      font-weight: 700;
+    }
+
+    .auth-message {
+      min-height: 25px;
+      text-align: center;
+      margin: 8px 0;
+      font-size: 13px;
+    }
+
+    .success {
+      color: #15803d;
+    }
+
+    .error {
+      color: var(--danger);
+    }
+
+    /* =========================
+       CART
+    ========================== */
+
+    .cart-list {
+      margin-bottom: 18px;
+    }
+
+    .cart-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      padding: 12px 0;
+    }
+
+    .cart-item-icon {
+      width: 55px;
+      height: 55px;
+      background: #f3f4f6;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+
+    .cart-item-info {
+      flex: 1;
+    }
+
+    .cart-item-name {
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .cart-item-price {
+      color: var(--primary);
+      font-size: 13px;
+    }
+
+    .quantity-controls {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .quantity-btn {
+      width: 27px;
+      height: 27px;
+      border: 1px solid var(--border);
+      background: white;
+      border-radius: 7px;
+    }
+
+    .remove-btn {
+      border: 0;
+      background: transparent;
+      color: var(--danger);
+      font-size: 17px;
+    }
+
+    .cart-total {
+      display: flex;
+      justify-content: space-between;
+      padding: 15px 0;
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .empty-cart {
+      text-align: center;
+      color: var(--muted);
+      padding: 35px 10px;
+    }
+
+    /* =========================
+       ACCOUNT
+    ========================== */
+
+    .account-info {
+      text-align: center;
+      padding: 10px;
+    }
+
+    .account-avatar {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: #e6fffb;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      font-size: 32px;
+    }
+
+    .account-email {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 20px;
+      word-break: break-all;
+    }
+
+    /* =========================
+       TOAST
+    ========================== */
+
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 5000;
+      background: #111827;
+      color: white;
+      padding: 13px 18px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.2);
+      transform: translateY(120px);
+      opacity: 0;
+      transition: .3s;
+      pointer-events: none;
+      font-size: 13px;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* =========================
+       MOBILE
+    ========================== */
+
+    @media (max-width: 900px) {
       .categories {
         grid-template-columns: repeat(3, 1fr);
       }
 
-      .products {
+      .products-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-      }
-
-      .product-image {
-        height: 150px;
       }
 
       .features {
         grid-template-columns: repeat(2, 1fr);
       }
 
-      .footer-inner {
-        grid-template-columns: 1fr 1fr;
+      .footer-grid {
+        grid-template-columns: repeat(2, 1fr);
       }
     }
 
-    @media (max-width: 480px) {
-
+    @media (max-width: 650px) {
       .topbar {
-        padding: 10px 15px;
-      }
-
-      main,
-      .hero {
-        padding-left: 12px;
-        padding-right: 12px;
-      }
-
-      .categories {
+        flex-wrap: wrap;
         gap: 8px;
+        padding: 10px 0;
       }
 
-      .category {
-        padding: 15px 5px;
-      }
-
-      .category-icon {
-        width: 45px;
-        height: 45px;
+      .logo {
         font-size: 22px;
       }
 
-      .category span {
-        font-size: 12px;
+      .search {
+        order: 3;
+        flex-basis: 100%;
+      }
+
+      .header-actions {
+        margin-right: auto;
+      }
+
+      .nav-inner {
+        gap: 20px;
+      }
+
+      .hero {
+        min-height: 300px;
+        padding: 35px 24px;
+        border-radius: 18px;
+      }
+
+      .hero p {
+        font-size: 15px;
+      }
+
+      .section {
+        margin: 32px auto;
+      }
+
+      .categories {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 9px;
+      }
+
+      .category {
+        padding: 15px 6px;
+      }
+
+      .category-icon {
+        font-size: 28px;
+      }
+
+      .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
       }
 
       .product-image {
-        height: 125px;
-        font-size: 48px;
+        height: 145px;
+        font-size: 55px;
       }
 
       .product-info {
@@ -516,331 +904,237 @@
         font-size: 14px;
       }
 
-      .price {
-        font-size: 14px;
+      .product-price {
+        font-size: 13px;
+      }
+
+      .add-btn {
+        padding: 7px 8px;
+        font-size: 11px;
+      }
+
+      .section-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .products-tools {
+        width: 100%;
+      }
+
+      .sort-select {
+        width: 100%;
+      }
+
+      .features {
+        grid-template-columns: 1fr 1fr;
+        gap: 9px;
+      }
+
+      .feature {
+        padding: 18px 10px;
+      }
+
+      .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 25px;
+      }
+
+      .modal-box {
+        padding: 21px 16px;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .categories {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .products-grid {
+        grid-template-columns: 1fr 1fr;
       }
 
       .features {
         grid-template-columns: 1fr;
       }
 
-      .footer-inner {
-        grid-template-columns: 1fr;
+      .action {
+        min-width: 45px;
       }
     }
-  </style>
-  <style>
-.auth-modal {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.65);
-  z-index: 9999;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.auth-box {
-  width: 100%;
-  max-width: 420px;
-  background: white;
-  border-radius: 18px;
-  padding: 25px;
-  position: relative;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.25);
-  direction: rtl;
-}
-
-.auth-close {
-  position: absolute;
-  top: 10px;
-  left: 12px;
-  border: none;
-  background: transparent;
-  font-size: 28px;
-  cursor: pointer;
-}
-
-.auth-title {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.auth-title h2 {
-  margin: 0 0 8px;
-}
-
-.auth-title p {
-  margin: 0;
-  color: #666;
-}
-
-.auth-box input {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 13px;
-  margin-bottom: 12px;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  font-size: 16px;
-  direction: rtl;
-}
-
-.auth-submit,
-.auth-switch {
-  width: 100%;
-  padding: 13px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 16px;
-  margin-top: 5px;
-}
-
-.auth-submit {
-  border: none;
-  background: #087f73;
-  color: white;
-}
-
-.auth-switch {
-  border: 1px solid #ddd;
-  background: white;
-  color: #222;
-}
-
-#authMessage {
-  text-align: center;
-  margin: 12px 0;
-  min-height: 20px;
-}
-    /* ترتيب الحساب والسلة في زاوية الهيدر */
-
-.topbar {
-  position: relative;
-}
-
-.header-actions {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  z-index: 20;
-}
-
-.header-actions .action {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  border: none;
-  background: white;
-  border-radius: 10px;
-  padding: 8px 10px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-@media (max-width: 600px) {
-  .header-actions {
-    top: 12px;
-    right: 10px;
-  }
-
-  .header-actions .action {
-    padding: 7px 9px;
-    font-size: 13px;
-  }
-}
   </style>
 </head>
 
 <body>
 
-<header>
+  <!-- =========================
+       HEADER
+  ========================== -->
 
-  <div class="topbar">
+  <header>
+    <div class="topbar">
 
-    <div class="logo">
-      Syria <span>Market</span>
+      <a href="#" class="logo" onclick="goHome(event)">
+        Syria <span>Market</span>
+      </a>
+
+      <div class="search">
+        <span class="search-icon">🔍</span>
+        <input
+          type="search"
+          id="searchInput"
+          placeholder="ابحث عن منتج أو متجر أو تصنيف..."
+          autocomplete="off"
+        >
+      </div>
+
+      <div class="header-actions">
+
+        <button
+          class="action"
+          title="الحساب"
+          onclick="openAccount()"
+          aria-label="الحساب"
+        >
+          👤
+          <span id="userStatus">الحساب</span>
+        </button>
+
+        <button
+          class="action"
+          title="السلة"
+          onclick="openCart()"
+          aria-label="السلة"
+        >
+          🛒
+          <span class="cart-count" id="cartCount">0</span>
+        </button>
+
+      </div>
     </div>
 
-    <div class="search">
-      <span class="search-icon">🔍</span>
-      <input
-        type="search"
-        placeholder="ابحث عن منتج أو متجر أو تصنيف..."
-        id="searchInput"
-      >
-    </div>
-
-    <div class="header-actions">
-
-  <button class="action" title="الحساب" onclick="openAuth()">
-    👤
-    <span id="userStatus">الحساب</span>
-  </button>
-
-  <button class="action" title="السلة" onclick="showCart()">
-    🛒
-    <span class="cart-count" id="cartCount">0</span>
-  </button>
-
-    </div>
-
-  </div>
-
-  <nav>
-    <div class="nav-inner">
-      <a href="#">الرئيسية</a>
-      <a href="#">المنتجات</a>
-      <a href="#">المتاجر</a>
-      <a href="#">العروض</a>
-      <a href="#">الأكثر مبيعًا</a>
-      <a href="#">كيف نعمل؟</a>
-      <a href="#">تواصل معنا</a>
-    </div>
-  </nav>
-
-</header>
+    <nav>
+      <div class="nav-inner">
+        <a href="#" onclick="goHome(event)">الرئيسية</a>
+        <a href="#productsSection">المنتجات</a>
+        <a href="#categoriesSection">التصنيفات</a>
+        <a href="#featuresSection">لماذا Syria Market؟</a>
+        <a href="#" onclick="openSellerInfo(event)">كن بائعاً</a>
+        <a href="#" onclick="openContact(event)">تواصل معنا</a>
+      </div>
+    </nav>
+  </header>
 
 
-<section class="hero">
+  <!-- =========================
+       HERO
+  ========================== -->
 
-  <div class="hero-box">
+  <section class="hero">
 
     <div class="hero-content">
 
-      <h1>كل ما تحتاجه<br>في مكان واحد 🇸🇾</h1>
+      <h1>كل ما تحتاجه في مكان واحد 🇸🇾</h1>
 
       <p>
-        Syria Market منصة إلكترونية تجمع المنتجات والمتاجر
-        وتسهّل عليك التسوق والبيع داخل سورية.
+        Syria Market هو السوق الإلكتروني الذي يجمع المنتجات والمتاجر
+        السورية في منصة واحدة، لتجعل تجربة التسوق أسهل وأقرب للجميع.
       </p>
 
-      <button class="hero-button" onclick="scrollToProducts()">
-        ابدأ التسوق
+      <button class="hero-btn" onclick="scrollToProducts()">
+        ابدأ التسوق الآن
       </button>
 
     </div>
 
-    <div class="hero-decoration"></div>
-
-  </div>
-
-</section>
+  </section>
 
 
-<main>
+  <!-- =========================
+       CATEGORIES
+  ========================== -->
 
-  <section class="section">
+  <section class="section" id="categoriesSection">
 
-    <div class="section-title">
-      <h2>تصفح الأقسام</h2>
-      <a href="#">عرض الكل</a>
+    <div class="section-head">
+      <div>
+        <h2>تصفح التصنيفات</h2>
+        <p>اختر القسم الذي تبحث عنه</p>
+      </div>
     </div>
 
     <div class="categories">
 
-      <div class="category">
+      <button class="category" onclick="filterCategory('إلكترونيات', this)">
         <div class="category-icon">📱</div>
-        <span>إلكترونيات</span>
-      </div>
+        <div class="category-name">إلكترونيات</div>
+      </button>
 
-      <div class="category">
+      <button class="category" onclick="filterCategory('ألبسة', this)">
         <div class="category-icon">👕</div>
-        <span>أزياء</span>
-      </div>
+        <div class="category-name">ألبسة</div>
+      </button>
 
-      <div class="category">
+      <button class="category" onclick="filterCategory('منزل', this)">
         <div class="category-icon">🏠</div>
-        <span>المنزل</span>
-      </div>
+        <div class="category-name">المنزل</div>
+      </button>
 
-      <div class="category">
+      <button class="category" onclick="filterCategory('جمال', this)">
         <div class="category-icon">💄</div>
-        <span>الجمال</span>
-      </div>
+        <div class="category-name">الجمال</div>
+      </button>
 
-      <div class="category">
+      <button class="category" onclick="filterCategory('مواد غذائية', this)">
         <div class="category-icon">🍎</div>
-        <span>غذائيات</span>
-      </div>
+        <div class="category-name">غذائيات</div>
+      </button>
 
-      <div class="category">
+      <button class="category" onclick="filterCategory('سيارات', this)">
         <div class="category-icon">🚗</div>
-        <span>سيارات</span>
-      </div>
+        <div class="category-name">سيارات</div>
+      </button>
 
     </div>
 
   </section>
 
+
+  <!-- =========================
+       PRODUCTS
+  ========================== -->
 
   <section class="section" id="productsSection">
 
-    <div class="section-title">
-      <h2>منتجات مميزة</h2>
-      <a href="#">عرض الكل</a>
+    <div class="section-head">
+
+      <div>
+        <h2>المنتجات</h2>
+        <p id="productsSubtitle">منتجات مختارة من السوق السوري</p>
+      </div>
+
+      <div class="products-tools">
+
+        <select
+          class="sort-select"
+          id="sortSelect"
+          onchange="sortProducts()"
+          aria-label="ترتيب المنتجات"
+        >
+          <option value="default">الترتيب الافتراضي</option>
+          <option value="price-low">السعر: من الأقل للأعلى</option>
+          <option value="price-high">السعر: من الأعلى للأقل</option>
+          <option value="name">الاسم</option>
+        </select>
+
+      </div>
+
     </div>
 
-    <div class="products">
+    <div class="products-grid" id="productsGrid">
 
-      <div class="product">
-        <div class="product-image">📱</div>
-        <div class="product-info">
-          <div class="product-name">هاتف ذكي</div>
-          <div class="seller">متجر التقنية السورية</div>
-
-          <div class="product-bottom">
-            <div class="price">2,500,000 ل.س</div>
-            <button class="add" onclick="addToCart()">+</button>
-          </div>
-        </div>
-      </div>
-
-
-      <div class="product">
-        <div class="product-image">👟</div>
-        <div class="product-info">
-          <div class="product-name">حذاء رياضي</div>
-          <div class="seller">متجر الأناقة</div>
-
-          <div class="product-bottom">
-            <div class="price">450,000 ل.س</div>
-            <button class="add" onclick="addToCart()">+</button>
-          </div>
-        </div>
-      </div>
-
-
-      <div class="product">
-        <div class="product-image">🎧</div>
-        <div class="product-info">
-          <div class="product-name">سماعات لاسلكية</div>
-          <div class="seller">عالم الإلكترونيات</div>
-
-          <div class="product-bottom">
-            <div class="price">180,000 ل.س</div>
-            <button class="add" onclick="addToCart()">+</button>
-          </div>
-        </div>
-      </div>
-
-
-      <div class="product">
-        <div class="product-image">☕</div>
-        <div class="product-info">
-          <div class="product-name">طقم فناجين</div>
-          <div class="seller">بيت المونة</div>
-
-          <div class="product-bottom">
-            <div class="price">125,000 ل.س</div>
-            <button class="add" onclick="addToCart()">+</button>
-          </div>
-        </div>
+      <div class="loading">
+        جارٍ تحميل المنتجات...
       </div>
 
     </div>
@@ -848,158 +1142,1767 @@
   </section>
 
 
-  <section class="section">
+  <!-- =========================
+       FEATURES
+  ========================== -->
 
-    <div class="section-title">
-      <h2>لماذا Syria Market؟</h2>
+  <section class="section" id="featuresSection">
+
+    <div class="section-head">
+      <div>
+        <h2>لماذا Syria Market؟</h2>
+        <p>نبني تجربة تسوق تناسب السوق السوري</p>
+      </div>
     </div>
 
     <div class="features">
 
       <div class="feature">
-        <div class="feature-icon">🏪</div>
+        <div class="feature-icon">🇸🇾</div>
         <h3>متاجر سورية</h3>
-        <p>منصة تجمع البائعين والمتاجر من مختلف المناطق السورية.</p>
+        <p>نجمع المتاجر والمنتجات السورية في مكان واحد.</p>
       </div>
 
       <div class="feature">
         <div class="feature-icon">🚚</div>
         <h3>توصيل</h3>
-        <p>إمكانية ربط الطلبات بخدمات التوصيل داخل المدن والمحافظات.</p>
+        <p>نسعى لتسهيل الوصول إلى المنتجات في مختلف المناطق.</p>
       </div>
 
       <div class="feature">
         <div class="feature-icon">💳</div>
         <h3>دفع مرن</h3>
-        <p>دعم طرق الدفع المناسبة للسوق السوري عند ربط بوابات الدفع.</p>
+        <p>خيارات دفع مناسبة لطبيعة السوق المحلي.</p>
       </div>
 
       <div class="feature">
         <div class="feature-icon">🔒</div>
         <h3>تسوق آمن</h3>
-        <p>نظام حسابات وطلبات وصلاحيات قابل للتطوير والحماية.</p>
+        <p>نعمل على بناء منصة موثوقة للمشترين والبائعين.</p>
       </div>
 
     </div>
 
   </section>
 
-</main>
 
+  <!-- =========================
+       FOOTER
+  ========================== -->
 
-<footer>
+  <footer>
 
-  <div class="footer-inner">
+    <div class="footer-grid">
 
-    <div>
-      <div class="footer-title">Syria Market 🇸🇾</div>
-      <p>
-        سوق إلكتروني سوري يجمع المنتجات والبائعين
-        ويسهّل عمليات البيع والشراء.
-      </p>
+      <div class="footer-brand">
+        <h2>Syria <span>Market</span></h2>
+        <p>
+          السوق الإلكتروني السوري الذي يجمع المنتجات والمتاجر
+          في منصة واحدة.
+        </p>
+      </div>
+
+      <div class="footer-links">
+        <h3>المتجر</h3>
+        <a href="#productsSection">المنتجات</a>
+        <a href="#categoriesSection">التصنيفات</a>
+        <a href="#" onclick="openCart(); return false;">السلة</a>
+      </div>
+
+      <div class="footer-links">
+        <h3>المساعدة</h3>
+        <a href="#" onclick="openContact(event)">تواصل معنا</a>
+        <a href="#" onclick="openInfo('about', event)">من نحن</a>
+        <a href="#" onclick="openInfo('privacy', event)">الخصوصية</a>
+      </div>
+
+      <div class="footer-links">
+        <h3>للبائعين</h3>
+        <a href="#" onclick="openSellerInfo(event)">كن بائعاً</a>
+        <a href="#" onclick="openInfo('terms', event)">الشروط والأحكام</a>
+      </div>
+
     </div>
 
-    <div>
-      <div class="footer-title">المتجر</div>
-      <a href="#">المنتجات</a>
-      <a href="#">التصنيفات</a>
-      <a href="#">العروض</a>
+    <div class="copyright">
+      © 2026 Syria Market - جميع الحقوق محفوظة
     </div>
 
-    <div>
-      <div class="footer-title">المساعدة</div>
-      <a href="#">الأسئلة الشائعة</a>
-      <a href="#">الشحن والتوصيل</a>
-      <a href="#">طرق الدفع</a>
-    </div>
+  </footer>
 
-    <div>
-      <div class="footer-title">للبيع معنا</div>
-      <a href="#">افتح متجرك</a>
-      <a href="#">شروط البائعين</a>
-      <a href="#">تواصل معنا</a>
+
+  <!-- =========================
+       AUTH MODAL
+  ========================== -->
+
+  <div class="modal" id="authModal">
+
+    <div class="modal-box">
+
+      <button class="modal-close" onclick="closeModal('authModal')">
+        ×
+      </button>
+
+      <div class="modal-title">
+        <h2 id="authTitle">تسجيل الدخول</h2>
+        <p>مرحباً بك في Syria Market</p>
+      </div>
+
+      <div class="form-group" id="fullNameGroup" style="display:none;">
+        <label for="fullName">الاسم الكامل</label>
+        <input
+          type="text"
+          class="form-control"
+          id="fullName"
+          placeholder="الاسم الكامل"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="authEmail">البريد الإلكتروني</label>
+        <input
+          type="email"
+          class="form-control"
+          id="authEmail"
+          placeholder="example@email.com"
+          autocomplete="email"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="authPassword">كلمة المرور</label>
+        <input
+          type="password"
+          class="form-control"
+          id="authPassword"
+          placeholder="كلمة المرور"
+          autocomplete="current-password"
+        >
+      </div>
+
+      <button
+        class="primary-btn"
+        id="authSubmit"
+        onclick="submitAuthForm()"
+      >
+        تسجيل الدخول
+      </button>
+
+      <div id="authMessage" class="auth-message"></div>
+
+      <button
+        class="secondary-btn"
+        id="authSwitch"
+        onclick="switchAuthMode()"
+      >
+        إنشاء حساب جديد
+      </button>
+
     </div>
 
   </div>
 
-  <div class="copyright">
-    © 2026 Syria Market — جميع الحقوق محفوظة
+
+  <!-- =========================
+       ACCOUNT MODAL
+  ========================== -->
+
+  <div class="modal" id="accountModal">
+
+    <div class="modal-box">
+
+      <button class="modal-close" onclick="closeModal('accountModal')">
+        ×
+      </button>
+
+      <div class="modal-title">
+        <h2>حسابي</h2>
+      </div>
+
+      <div id="loggedOutAccount">
+
+        <div class="account-info">
+          <div class="account-avatar">👤</div>
+          <p>سجّل الدخول للوصول إلى حسابك.</p>
+        </div>
+
+        <button class="primary-btn" onclick="openAuthFromAccount()">
+          تسجيل الدخول
+        </button>
+
+      </div>
+
+      <div id="loggedInAccount" style="display:none;">
+
+        <div class="account-info">
+
+          <div class="account-avatar">👤</div>
+
+          <h3 id="accountName">المستخدم</h3>
+
+          <div
+            class="account-email"
+            id="accountEmail"
+          ></div>
+
+        </div>
+
+        <button
+          class="primary-btn"
+          onclick="logoutUser()"
+        >
+          تسجيل الخروج
+        </button>
+
+      </div>
+
+    </div>
+
   </div>
 
-</footer>
+
+  <!-- =========================
+       CART MODAL
+  ========================== -->
+
+  <div class="modal" id="cartModal">
+
+    <div class="modal-box modal-large">
+
+      <button class="modal-close" onclick="closeModal('cartModal')">
+        ×
+      </button>
+
+      <div class="modal-title">
+        <h2>سلة المشتريات 🛒</h2>
+        <p>راجع المنتجات قبل متابعة الطلب</p>
+      </div>
+
+      <div id="cartItems" class="cart-list"></div>
+
+      <div class="cart-total">
+        <span>المجموع</span>
+        <span id="cartTotal">0 ل.س</span>
+      </div>
+
+      <button
+        class="primary-btn"
+        id="checkoutButton"
+        onclick="startCheckout()"
+      >
+        متابعة الطلب
+      </button>
+
+    </div>
+
+  </div>
 
 
-<script>
+  <!-- =========================
+       CHECKOUT MODAL
+  ========================== -->
 
-  let cart = 0;
+  <div class="modal" id="checkoutModal">
 
-  function addToCart() {
-    cart++;
-    document.getElementById("cartCount").textContent = cart;
-  }
+    <div class="modal-box">
 
-  function showCart() {
-    alert(
-      cart === 0
-      ? "السلة فارغة حاليًا"
-      : "لديك " + cart + " منتج في السلة"
-    );
-  }
+      <button class="modal-close" onclick="closeModal('checkoutModal')">
+        ×
+      </button>
 
-  function scrollToProducts() {
-    document
-      .getElementById("productsSection")
-      .scrollIntoView({
+      <div class="modal-title">
+        <h2>إتمام الطلب</h2>
+        <p>أدخل معلومات التواصل والتوصيل</p>
+      </div>
+
+      <div class="form-group">
+        <label for="checkoutName">الاسم</label>
+        <input
+          type="text"
+          class="form-control"
+          id="checkoutName"
+          placeholder="الاسم الكامل"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="checkoutPhone">رقم الهاتف</label>
+        <input
+          type="tel"
+          class="form-control"
+          id="checkoutPhone"
+          placeholder="رقم الهاتف"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="checkoutCity">المحافظة / المدينة</label>
+        <input
+          type="text"
+          class="form-control"
+          id="checkoutCity"
+          placeholder="مثال: حماة"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="checkoutAddress">عنوان التوصيل</label>
+        <textarea
+          class="form-control"
+          id="checkoutAddress"
+          placeholder="العنوان بالتفصيل"
+        ></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="checkoutNotes">ملاحظات إضافية</label>
+        <textarea
+          class="form-control"
+          id="checkoutNotes"
+          placeholder="أي ملاحظات تخص الطلب"
+        ></textarea>
+      </div>
+
+      <button
+        class="primary-btn"
+        onclick="submitCheckout()"
+      >
+        تأكيد الطلب
+      </button>
+
+      <div id="checkoutMessage" class="auth-message"></div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================
+       INFO MODAL
+  ========================== -->
+
+  <div class="modal" id="infoModal">
+
+    <div class="modal-box">
+
+      <button class="modal-close" onclick="closeModal('infoModal')">
+        ×
+      </button>
+
+      <div class="modal-title">
+        <h2 id="infoTitle">Syria Market</h2>
+      </div>
+
+      <div id="infoContent"></div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================
+       TOAST
+  ========================== -->
+
+  <div class="toast" id="toast"></div>
+
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- ملف الاتصال الموجود لديك -->
+  <script src="app.js"></script>
+
+
+  <script>
+    /* =====================================================
+       SYRIA MARKET - FRONTEND APPLICATION
+       ===================================================== */
+
+    let allProducts = [];
+    let displayedProducts = [];
+    let selectedCategory = "";
+    let authMode = "login";
+
+    let cart = [];
+
+    const DEMO_PRODUCTS = [
+      {
+        id: "demo-1",
+        name: "هاتف ذكي",
+        price: 2500000,
+        seller: "متجر التقنية السورية",
+        category: "إلكترونيات",
+        image: "",
+        icon: "📱"
+      },
+      {
+        id: "demo-2",
+        name: "حذاء رياضي",
+        price: 450000,
+        seller: "متجر الأناقة",
+        category: "ألبسة",
+        image: "",
+        icon: "👟"
+      },
+      {
+        id: "demo-3",
+        name: "سماعات لاسلكية",
+        price: 180000,
+        seller: "عالم الإلكترونيات",
+        category: "إلكترونيات",
+        image: "",
+        icon: "🎧"
+      },
+      {
+        id: "demo-4",
+        name: "طقم فناجين",
+        price: 125000,
+        seller: "بيت المونة",
+        category: "منزل",
+        image: "",
+        icon: "☕"
+      }
+    ];
+
+
+    /* =====================================================
+       HELPERS
+       ===================================================== */
+
+    function escapeHTML(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+
+    function getNumber(value) {
+      if (typeof value === "number") return value;
+
+      if (value === null || value === undefined) {
+        return 0;
+      }
+
+      const cleaned = String(value)
+        .replace(/[^\d.-]/g, "");
+
+      const number = Number(cleaned);
+
+      return Number.isFinite(number) ? number : 0;
+    }
+
+
+    function formatPrice(value) {
+      const number = getNumber(value);
+
+      return new Intl.NumberFormat("ar-SY").format(number) + " ل.س";
+    }
+
+
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+
+      if (!toast) return;
+
+      toast.textContent = message;
+      toast.classList.add("show");
+
+      clearTimeout(window.toastTimer);
+
+      window.toastTimer = setTimeout(() => {
+        toast.classList.remove("show");
+      }, 2500);
+    }
+
+
+    function openModal(id) {
+      const modal = document.getElementById(id);
+
+      if (modal) {
+        modal.classList.add("show");
+      }
+    }
+
+
+    function closeModal(id) {
+      const modal = document.getElementById(id);
+
+      if (modal) {
+        modal.classList.remove("show");
+      }
+    }
+
+
+    function closeAllModals() {
+      document
+        .querySelectorAll(".modal")
+        .forEach(modal => modal.classList.remove("show"));
+    }
+
+
+    /* =====================================================
+       PRODUCTS
+       ===================================================== */
+
+    function normalizeProduct(product) {
+
+      const name =
+        product.name ||
+        product.title ||
+        product.product_name ||
+        product.product_title ||
+        "منتج";
+
+      const price =
+        product.price ??
+        product.sale_price ??
+        product.amount ??
+        0;
+
+      const seller =
+        product.seller_name ||
+        product.store_name ||
+        product.shop_name ||
+        product.seller ||
+        "متجر سوري";
+
+      const category =
+        product.category_name ||
+        product.category ||
+        "أخرى";
+
+      const image =
+        product.image_url ||
+        product.image ||
+        product.photo_url ||
+        product.thumbnail ||
+        "";
+
+      return {
+        id: product.id,
+        name: String(name),
+        price: getNumber(price),
+        seller: String(seller),
+        category: String(category),
+        image: String(image),
+        icon: product.icon || "🛍️",
+        raw: product
+      };
+    }
+
+
+    async function loadProducts() {
+
+      const grid = document.getElementById("productsGrid");
+
+      if (!grid) return;
+
+      grid.innerHTML = `
+        <div class="loading">
+          جارٍ تحميل المنتجات...
+        </div>
+      `;
+
+      try {
+
+        if (
+          typeof supabaseClient === "undefined" ||
+          !supabaseClient
+        ) {
+          throw new Error("Supabase client unavailable");
+        }
+
+        const { data, error } = await supabaseClient
+          .from("products")
+          .select("*");
+
+        if (error) {
+          console.error("Products error:", error);
+          throw error;
+        }
+
+        const normalized = Array.isArray(data)
+          ? data.map(normalizeProduct)
+          : [];
+
+        allProducts = normalized.length
+          ? normalized
+          : [...DEMO_PRODUCTS];
+
+      } catch (error) {
+
+        console.warn(
+          "تعذر تحميل المنتجات من Supabase، سيتم عرض المنتجات التجريبية.",
+          error
+        );
+
+        allProducts = [...DEMO_PRODUCTS];
+      }
+
+      displayedProducts = [...allProducts];
+
+      renderProducts();
+    }
+
+
+    function renderProducts() {
+
+      const grid = document.getElementById("productsGrid");
+
+      if (!grid) return;
+
+      if (!displayedProducts.length) {
+
+        grid.innerHTML = `
+          <div class="empty-products">
+            <div style="font-size:45px;margin-bottom:10px;">🔎</div>
+            <h3>لم نجد منتجات</h3>
+            <p>جرّب كلمة بحث أخرى أو اختر تصنيفاً مختلفاً.</p>
+          </div>
+        `;
+
+        return;
+      }
+
+
+      grid.innerHTML = displayedProducts
+        .map(product => {
+
+          const safeId = escapeHTML(product.id);
+          const safeName = escapeHTML(product.name);
+          const safeSeller = escapeHTML(product.seller);
+          const safeCategory = escapeHTML(product.category);
+          const safeImage = escapeHTML(product.image);
+
+          let imageHTML;
+
+          if (safeImage) {
+            imageHTML = `
+              <img
+                src="${safeImage}"
+                alt="${safeName}"
+                loading="lazy"
+                onerror="this.style.display='none';this.parentElement.innerHTML='<span>${escapeHTML(product.icon)}</span>';"
+              >
+            `;
+          } else {
+            imageHTML = `
+              <span>${escapeHTML(product.icon)}</span>
+            `;
+          }
+
+          return `
+            <article class="product-card">
+
+              <div class="product-image">
+                ${imageHTML}
+              </div>
+
+              <div class="product-info">
+
+                <div class="product-category">
+                  ${safeCategory}
+                </div>
+
+                <div class="product-name">
+                  ${safeName}
+                </div>
+
+                <div class="product-seller">
+                  ${safeSeller}
+                </div>
+
+                <div class="product-bottom">
+
+                  <div class="product-price">
+                    ${formatPrice(product.price)}
+                  </div>
+
+                  <button
+                    class="add-btn"
+                    onclick="addProductToCart('${safeId}')"
+                  >
+                    🛒 أضف
+                  </button>
+
+                </div>
+
+              </div>
+
+            </article>
+          `;
+
+        })
+        .join("");
+    }
+
+
+    /* =====================================================
+       SEARCH
+       ===================================================== */
+
+    function applyFilters() {
+
+      const searchInput =
+        document.getElementById("searchInput");
+
+      const searchTerm =
+        searchInput
+          ? searchInput.value.trim().toLowerCase()
+          : "";
+
+      displayedProducts = allProducts.filter(product => {
+
+        const matchesCategory =
+          !selectedCategory ||
+          product.category
+            .toLowerCase()
+            .includes(selectedCategory.toLowerCase());
+
+        const searchableText = [
+          product.name,
+          product.seller,
+          product.category
+        ]
+          .join(" ")
+          .toLowerCase();
+
+        const matchesSearch =
+          !searchTerm ||
+          searchableText.includes(searchTerm);
+
+        return matchesCategory && matchesSearch;
+      });
+
+      sortProducts(false);
+    }
+
+
+    function filterCategory(category, element) {
+
+      if (selectedCategory === category) {
+        selectedCategory = "";
+
+        document
+          .querySelectorAll(".category")
+          .forEach(item => item.classList.remove("active"));
+
+      } else {
+
+        selectedCategory = category;
+
+        document
+          .querySelectorAll(".category")
+          .forEach(item => item.classList.remove("active"));
+
+        if (element) {
+          element.classList.add("active");
+        }
+      }
+
+      applyFilters();
+
+      document
+        .getElementById("productsSection")
+        ?.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+    }
+
+
+    function sortProducts(triggerFilter = true) {
+
+      if (triggerFilter) {
+        applyFiltersWithoutSort();
+      }
+
+      const select =
+        document.getElementById("sortSelect");
+
+      const value =
+        select ? select.value : "default";
+
+      if (value === "price-low") {
+
+        displayedProducts.sort(
+          (a, b) => a.price - b.price
+        );
+
+      } else if (value === "price-high") {
+
+        displayedProducts.sort(
+          (a, b) => b.price - a.price
+        );
+
+      } else if (value === "name") {
+
+        displayedProducts.sort(
+          (a, b) =>
+            a.name.localeCompare(
+              b.name,
+              "ar"
+            )
+        );
+      }
+
+      renderProducts();
+    }
+
+
+    function applyFiltersWithoutSort() {
+
+      const searchInput =
+        document.getElementById("searchInput");
+
+      const searchTerm =
+        searchInput
+          ? searchInput.value.trim().toLowerCase()
+          : "";
+
+      displayedProducts = allProducts.filter(product => {
+
+        const categoryMatch =
+          !selectedCategory ||
+          product.category
+            .toLowerCase()
+            .includes(selectedCategory.toLowerCase());
+
+        const text = [
+          product.name,
+          product.seller,
+          product.category
+        ]
+          .join(" ")
+          .toLowerCase();
+
+        return (
+          categoryMatch &&
+          (!searchTerm || text.includes(searchTerm))
+        );
+      });
+    }
+
+
+    /* =====================================================
+       CART
+       ===================================================== */
+
+    function loadCart() {
+
+      try {
+
+        const saved =
+          localStorage.getItem("syriaMarketCart");
+
+        cart = saved
+          ? JSON.parse(saved)
+          : [];
+
+        if (!Array.isArray(cart)) {
+          cart = [];
+        }
+
+      } catch (error) {
+        cart = [];
+      }
+
+      updateCartCount();
+    }
+
+
+    function saveCart() {
+
+      try {
+        localStorage.setItem(
+          "syriaMarketCart",
+          JSON.stringify(cart)
+        );
+      } catch (error) {
+        console.warn("Cart storage error:", error);
+      }
+
+      updateCartCount();
+    }
+
+
+    function updateCartCount() {
+
+      const count =
+        cart.reduce(
+          (total, item) =>
+            total + Number(item.quantity || 0),
+          0
+        );
+
+      const element =
+        document.getElementById("cartCount");
+
+      if (element) {
+        element.textContent = count;
+      }
+    }
+
+
+    function addProductToCart(productId) {
+
+      const product =
+        allProducts.find(
+          item => String(item.id) === String(productId)
+        );
+
+      if (!product) {
+        showToast("تعذر العثور على المنتج.");
+        return;
+      }
+
+      const existing =
+        cart.find(
+          item => String(item.id) === String(product.id)
+        );
+
+      if (existing) {
+        existing.quantity++;
+      } else {
+
+        cart.push({
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          seller: product.seller,
+          category: product.category,
+          icon: product.icon,
+          image: product.image,
+          quantity: 1
+        });
+
+      }
+
+      saveCart();
+
+      showToast("تمت إضافة المنتج إلى السلة 🛒");
+    }
+
+
+    function changeQuantity(productId, amount) {
+
+      const item =
+        cart.find(
+          product =>
+            String(product.id) === String(productId)
+        );
+
+      if (!item) return;
+
+      item.quantity += amount;
+
+      if (item.quantity <= 0) {
+        cart = cart.filter(
+          product =>
+            String(product.id) !== String(productId)
+        );
+      }
+
+      saveCart();
+      renderCart();
+    }
+
+
+    function removeFromCart(productId) {
+
+      cart = cart.filter(
+        item =>
+          String(item.id) !== String(productId)
+      );
+
+      saveCart();
+      renderCart();
+    }
+
+
+    function getCartTotal() {
+
+      return cart.reduce(
+        (total, item) =>
+          total +
+          getNumber(item.price) *
+          Number(item.quantity || 0),
+        0
+      );
+    }
+
+
+    function renderCart() {
+
+      const container =
+        document.getElementById("cartItems");
+
+      const total =
+        document.getElementById("cartTotal");
+
+      const checkout =
+        document.getElementById("checkoutButton");
+
+      if (!container) return;
+
+      if (!cart.length) {
+
+        container.innerHTML = `
+          <div class="empty-cart">
+            <div style="font-size:50px;margin-bottom:10px;">
+              🛒
+            </div>
+            <h3>السلة فارغة</h3>
+            <p>أضف المنتجات التي ترغب بشرائها.</p>
+          </div>
+        `;
+
+        if (total) {
+          total.textContent = "0 ل.س";
+        }
+
+        if (checkout) {
+          checkout.disabled = true;
+          checkout.style.opacity = ".5";
+        }
+
+        return;
+      }
+
+      if (checkout) {
+        checkout.disabled = false;
+        checkout.style.opacity = "1";
+      }
+
+      container.innerHTML =
+        cart.map(item => `
+
+          <div class="cart-item">
+
+            <div class="cart-item-icon">
+              ${escapeHTML(item.icon || "🛍️")}
+            </div>
+
+            <div class="cart-item-info">
+
+              <div class="cart-item-name">
+                ${escapeHTML(item.name)}
+              </div>
+
+              <div class="cart-item-price">
+                ${formatPrice(item.price)}
+              </div>
+
+            </div>
+
+            <div class="quantity-controls">
+
+              <button
+                class="quantity-btn"
+                onclick="changeQuantity('${escapeHTML(item.id)}', 1)"
+              >
+                +
+              </button>
+
+              <strong>${item.quantity}</strong>
+
+              <button
+                class="quantity-btn"
+                onclick="changeQuantity('${escapeHTML(item.id)}', -1)"
+              >
+                −
+              </button>
+
+            </div>
+
+            <button
+              class="remove-btn"
+              title="حذف"
+              onclick="removeFromCart('${escapeHTML(item.id)}')"
+            >
+              🗑️
+            </button>
+
+          </div>
+
+        `).join("");
+
+      if (total) {
+        total.textContent =
+          formatPrice(getCartTotal());
+      }
+    }
+
+
+    function openCart() {
+
+      renderCart();
+      openModal("cartModal");
+    }
+
+
+    /* =====================================================
+       AUTH
+       ===================================================== */
+
+    function openAuth() {
+
+      closeModal("accountModal");
+
+      authMode = "login";
+      updateAuthUI();
+
+      openModal("authModal");
+    }
+
+
+    function updateAuthUI() {
+
+      const title =
+        document.getElementById("authTitle");
+
+      const submit =
+        document.getElementById("authSubmit");
+
+      const switchButton =
+        document.getElementById("authSwitch");
+
+      const fullNameGroup =
+        document.getElementById("fullNameGroup");
+
+      const password =
+        document.getElementById("authPassword");
+
+      const message =
+        document.getElementById("authMessage");
+
+      if (authMode === "login") {
+
+        title.textContent = "تسجيل الدخول";
+        submit.textContent = "تسجيل الدخول";
+        switchButton.textContent = "إنشاء حساب جديد";
+
+        fullNameGroup.style.display = "none";
+
+        password.autocomplete = "current-password";
+
+      } else {
+
+        title.textContent = "إنشاء حساب جديد";
+        submit.textContent = "إنشاء الحساب";
+        switchButton.textContent = "لدي حساب بالفعل";
+
+        fullNameGroup.style.display = "block";
+
+        password.autocomplete = "new-password";
+      }
+
+      message.textContent = "";
+      message.className = "auth-message";
+    }
+
+
+    function switchAuthMode() {
+
+      authMode =
+        authMode === "login"
+          ? "signup"
+          : "login";
+
+      updateAuthUI();
+    }
+
+
+    async function submitAuthForm() {
+
+      const email =
+        document
+          .getElementById("authEmail")
+          .value
+          .trim();
+
+      const password =
+        document
+          .getElementById("authPassword")
+          .value;
+
+      const fullName =
+        document
+          .getElementById("fullName")
+          .value
+          .trim();
+
+      const message =
+        document.getElementById("authMessage");
+
+      if (!email || !password) {
+
+        message.textContent =
+          "يرجى إدخال البريد الإلكتروني وكلمة المرور.";
+
+        message.className =
+          "auth-message error";
+
+        return;
+      }
+
+      if (password.length < 6) {
+
+        message.textContent =
+          "كلمة المرور يجب أن تكون 6 أحرف على الأقل.";
+
+        message.className =
+          "auth-message error";
+
+        return;
+      }
+
+      message.textContent =
+        "جارٍ المعالجة...";
+
+      message.className =
+        "auth-message";
+
+
+      try {
+
+        if (
+          typeof signIn !== "function" ||
+          typeof signUp !== "function"
+        ) {
+          throw new Error(
+            "دوال المصادقة غير موجودة في app.js"
+          );
+        }
+
+
+        if (authMode === "login") {
+
+          const result =
+            await signIn(email, password);
+
+          if (!result.success) {
+            throw new Error(result.error);
+          }
+
+          message.textContent =
+            "تم تسجيل الدخول بنجاح.";
+
+          message.className =
+            "auth-message success";
+
+          await updateUserStatus();
+
+          setTimeout(() => {
+            closeModal("authModal");
+          }, 700);
+
+        } else {
+
+          const result =
+            await signUp(
+              email,
+              password,
+              fullName
+            );
+
+          if (!result.success) {
+            throw new Error(result.error);
+          }
+
+          message.textContent =
+            "تم إنشاء الحساب. إذا كان تأكيد البريد مفعلاً، تحقق من بريدك الإلكتروني.";
+
+          message.className =
+            "auth-message success";
+        }
+
+      } catch (error) {
+
+        console.error("Authentication error:", error);
+
+        message.textContent =
+          error.message ||
+          "حدث خطأ أثناء العملية.";
+
+        message.className =
+          "auth-message error";
+      }
+    }
+
+
+    async function getUserSafe() {
+
+      try {
+
+        if (
+          typeof getCurrentUser === "function"
+        ) {
+          return await getCurrentUser();
+        }
+
+        if (
+          typeof supabaseClient !== "undefined"
+        ) {
+
+          const { data } =
+            await supabaseClient.auth.getUser();
+
+          return data?.user || null;
+        }
+
+      } catch (error) {
+        console.error(error);
+      }
+
+      return null;
+    }
+
+
+    async function updateUserStatus() {
+
+      const status =
+        document.getElementById("userStatus");
+
+      if (!status) return;
+
+      const user =
+        await getUserSafe();
+
+      status.textContent =
+        user ? "حسابي" : "الحساب";
+    }
+
+
+    async function openAccount() {
+
+      const user =
+        await getUserSafe();
+
+      const loggedOut =
+        document.getElementById("loggedOutAccount");
+
+      const loggedIn =
+        document.getElementById("loggedInAccount");
+
+      if (user) {
+
+        loggedOut.style.display = "none";
+        loggedIn.style.display = "block";
+
+        document.getElementById("accountEmail")
+          .textContent =
+          user.email || "";
+
+        document.getElementById("accountName")
+          .textContent =
+          user.user_metadata?.full_name ||
+          "المستخدم";
+
+      } else {
+
+        loggedOut.style.display = "block";
+        loggedIn.style.display = "none";
+      }
+
+      openModal("accountModal");
+    }
+
+
+    function openAuthFromAccount() {
+
+      closeModal("accountModal");
+      openAuth();
+    }
+
+
+    async function logoutUser() {
+
+      try {
+
+        if (
+          typeof signOut === "function"
+        ) {
+
+          const result =
+            await signOut();
+
+          if (!result.success) {
+            throw new Error(result.error);
+          }
+
+        } else if (
+          typeof supabaseClient !== "undefined"
+        ) {
+
+          const { error } =
+            await supabaseClient.auth.signOut();
+
+          if (error) throw error;
+        }
+
+        closeModal("accountModal");
+
+        await updateUserStatus();
+
+        showToast("تم تسجيل الخروج.");
+
+      } catch (error) {
+
+        console.error(error);
+
+        showToast(
+          "تعذر تسجيل الخروج."
+        );
+      }
+    }
+
+
+    /* =====================================================
+       CHECKOUT
+       ===================================================== */
+
+    async function startCheckout() {
+
+      if (!cart.length) {
+        showToast("السلة فارغة.");
+        return;
+      }
+
+      const user =
+        await getUserSafe();
+
+      if (!user) {
+
+        closeModal("cartModal");
+
+        showToast(
+          "يرجى تسجيل الدخول أولاً لإتمام الطلب."
+        );
+
+        setTimeout(() => {
+          openAuth();
+        }, 400);
+
+        return;
+      }
+
+      closeModal("cartModal");
+
+      document.getElementById("checkoutMessage")
+        .textContent = "";
+
+      document.getElementById("checkoutMessage")
+        .className = "auth-message";
+
+      openModal("checkoutModal");
+    }
+
+
+    /*
+      ملاحظة مهمة:
+      لا نقوم هنا بإرسال الطلب مباشرة إلى جدول orders
+      لأن بنية أعمدة الطلبات النهائية يجب أن تكون مؤكدة
+      قبل تفعيل عملية الشراء الحقيقية.
+
+      في هذه المرحلة الواجهة والسلة جاهزتان.
+      سيتم ربط إنشاء الطلب والـ order_items في المرحلة
+      التالية بعد تثبيت مخطط قاعدة البيانات النهائي.
+    */
+
+    async function submitCheckout() {
+
+      const name =
+        document
+          .getElementById("checkoutName")
+          .value
+          .trim();
+
+      const phone =
+        document
+          .getElementById("checkoutPhone")
+          .value
+          .trim();
+
+      const city =
+        document
+          .getElementById("checkoutCity")
+          .value
+          .trim();
+
+      const address =
+        document
+          .getElementById("checkoutAddress")
+          .value
+          .trim();
+
+      const notes =
+        document
+          .getElementById("checkoutNotes")
+          .value
+          .trim();
+
+      const message =
+        document.getElementById("checkoutMessage");
+
+
+      if (!name || !phone || !city || !address) {
+
+        message.textContent =
+          "يرجى تعبئة الاسم ورقم الهاتف والمدينة والعنوان.";
+
+        message.className =
+          "auth-message error";
+
+        return;
+      }
+
+
+      /*
+        لا نرسل طلباً إلى قاعدة البيانات بشكل تخميني.
+        هذا يمنع إنشاء طلبات تالفة بسبب اختلاف أسماء
+        الأعمدة في جدول orders.
+      */
+
+      console.log("Checkout data:", {
+        name,
+        phone,
+        city,
+        address,
+        notes,
+        cart,
+        total: getCartTotal()
+      });
+
+      message.textContent =
+        "معلومات الطلب جاهزة. سيتم تفعيل إرسال الطلب إلى قاعدة البيانات بعد ربط نظام الطلبات النهائي.";
+
+      message.className =
+        "auth-message success";
+    }
+
+
+    /* =====================================================
+       NAVIGATION / INFO
+       ===================================================== */
+
+    function scrollToProducts() {
+
+      document
+        .getElementById("productsSection")
+        ?.scrollIntoView({
+          behavior: "smooth"
+        });
+    }
+
+
+    function goHome(event) {
+
+      if (event) {
+        event.preventDefault();
+      }
+
+      window.scrollTo({
+        top: 0,
         behavior: "smooth"
       });
-  }
 
-</script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="app.js"></script>
-  <!-- AUTH MODAL -->
-<div id="authModal" class="auth-modal">
+      selectedCategory = "";
 
-  <div class="auth-box">
+      document
+        .querySelectorAll(".category")
+        .forEach(item =>
+          item.classList.remove("active")
+        );
 
-    <button class="auth-close" onclick="closeAuth()">×</button>
+      const search =
+        document.getElementById("searchInput");
 
-    <div class="auth-title">
-      <h2 id="authTitle">تسجيل الدخول</h2>
-      <p>مرحباً بك في Syria Market</p>
-    </div>
+      if (search) {
+        search.value = "";
+      }
 
-    <input
-      type="text"
-      id="fullName"
-      placeholder="الاسم الكامل"
-      style="display:none;"
-    >
+      displayedProducts = [...allProducts];
 
-    <input
-      type="email"
-      id="authEmail"
-      placeholder="البريد الإلكتروني"
-    >
+      renderProducts();
+    }
 
-    <input
-      type="password"
-      id="authPassword"
-      placeholder="كلمة المرور"
-    >
 
-    <button class="auth-submit" onclick="submitAuth()">
-      تسجيل الدخول
-    </button>
+    function openInfo(type, event) {
 
-    <p id="authMessage"></p>
+      if (event) {
+        event.preventDefault();
+      }
 
-    <button class="auth-switch" onclick="switchAuth()">
-      إنشاء حساب جديد
-    </button>
+      const title =
+        document.getElementById("infoTitle");
 
-  </div>
+      const content =
+        document.getElementById("infoContent");
 
-</div>
+      if (type === "about") {
+
+        title.textContent = "من نحن";
+
+        content.innerHTML = `
+          <p>
+            Syria Market منصة إلكترونية تهدف إلى جمع
+            المنتجات والمتاجر السورية في مكان واحد،
+            وتسهيل عملية البحث والشراء والتواصل بين
+            البائع والمشتري.
+          </p>
+        `;
+
+      } else if (type === "privacy") {
+
+        title.textContent = "الخصوصية";
+
+        content.innerHTML = `
+          <p>
+            نعمل على حماية بيانات المستخدمين واستخدامها
+            ضمن الخدمات التي تقدمها المنصة فقط.
+          </p>
+        `;
+
+      } else if (type === "terms") {
+
+        title.textContent = "الشروط والأحكام";
+
+        content.innerHTML = `
+          <p>
+            استخدام المنصة يعني الموافقة على الشروط
+            والسياسات التي سيتم نشرها واعتمادها
+            عند إطلاق نظام البيع بصورة نهائية.
+          </p>
+        `;
+
+      }
+
+      openModal("infoModal");
+    }
+
+
+    function openContact(event) {
+
+      if (event) {
+        event.preventDefault();
+      }
+
+      document.getElementById("infoTitle")
+        .textContent = "تواصل معنا";
+
+      document.getElementById("infoContent")
+        .innerHTML = `
+          <p style="margin-bottom:12px;">
+            يمكنك التواصل مع إدارة Syria Market
+            عند إطلاق قنوات التواصل الرسمية للمنصة.
+          </p>
+
+          <p style="color:#6b7280;font-size:13px;">
+            سيتم إضافة وسائل التواصل والدعم الفني
+            في المرحلة القادمة.
+          </p>
+        `;
+
+      openModal("infoModal");
+    }
+
+
+    function openSellerInfo(event) {
+
+      if (event) {
+        event.preventDefault();
+      }
+
+      document.getElementById("infoTitle")
+        .textContent = "كن بائعاً";
+
+      document.getElementById("infoContent")
+        .innerHTML = `
+          <p style="margin-bottom:12px;">
+            قريباً سيتمكن أصحاب المتاجر السورية
+            من إنشاء متاجرهم وإضافة منتجاتهم
+            وإدارتها من خلال Syria Market.
+          </p>
+
+          <p style="color:#6b7280;font-size:13px;">
+            نظام البائعين ولوحة التحكم قيد البناء.
+          </p>
+        `;
+
+      openModal("infoModal");
+    }
+
+
+    /* =====================================================
+       EVENTS
+    ===================================================== */
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      async function () {
+
+        loadCart();
+
+        await loadProducts();
+
+        await updateUserStatus();
+
+        const searchInput =
+          document.getElementById("searchInput");
+
+        if (searchInput) {
+
+          searchInput.addEventListener(
+            "input",
+            function () {
+              applyFilters();
+            }
+          );
+        }
+
+      }
+    );
+
+
+    /* إغلاق النافذة عند الضغط خارج الصندوق */
+
+    document
+      .querySelectorAll(".modal")
+      .forEach(modal => {
+
+        modal.addEventListener(
+          "click",
+          function (event) {
+
+            if (event.target === modal) {
+              modal.classList.remove("show");
+            }
+
+          }
+        );
+
+      });
+
+
+    /* زر Escape لإغلاق النوافذ */
+
+    document.addEventListener(
+      "keydown",
+      function (event) {
+
+        if (event.key === "Escape") {
+          closeAllModals();
+        }
+
+      }
+    );
+
+  </script>
+
 </body>
 </html>
