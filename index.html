@@ -553,14 +553,15 @@
 
     <div class="header-actions">
 
-      <button class="action" title="الحساب">
-        👤
-      </button>
+  <button class="action" title="الحساب" onclick="openAuth()">
+    👤
+    <span id="userStatus">الحساب</span>
+  </button>
 
-      <button class="action" title="السلة" onclick="showCart()">
-        🛒
-        <span class="cart-count" id="cartCount">0</span>
-      </button>
+  <button class="action" title="السلة" onclick="showCart()">
+    🛒
+    <span class="cart-count" id="cartCount">0</span>
+  </button>
 
     </div>
 
@@ -831,5 +832,49 @@
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="app.js"></script>
+  <!-- AUTH MODAL -->
+<div id="authModal" class="auth-modal">
+
+  <div class="auth-box">
+
+    <button class="auth-close" onclick="closeAuth()">×</button>
+
+    <div class="auth-title">
+      <h2 id="authTitle">تسجيل الدخول</h2>
+      <p>مرحباً بك في Syria Market</p>
+    </div>
+
+    <input
+      type="text"
+      id="fullName"
+      placeholder="الاسم الكامل"
+      style="display:none;"
+    >
+
+    <input
+      type="email"
+      id="authEmail"
+      placeholder="البريد الإلكتروني"
+    >
+
+    <input
+      type="password"
+      id="authPassword"
+      placeholder="كلمة المرور"
+    >
+
+    <button class="auth-submit" onclick="submitAuth()">
+      تسجيل الدخول
+    </button>
+
+    <p id="authMessage"></p>
+
+    <button class="auth-switch" onclick="switchAuth()">
+      إنشاء حساب جديد
+    </button>
+
+  </div>
+
+</div>
 </body>
 </html>
