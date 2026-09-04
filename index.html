@@ -529,6 +529,92 @@
       }
     }
   </style>
+  <style>
+.auth-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.auth-box {
+  width: 100%;
+  max-width: 420px;
+  background: white;
+  border-radius: 18px;
+  padding: 25px;
+  position: relative;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+  direction: rtl;
+}
+
+.auth-close {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  border: none;
+  background: transparent;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+.auth-title {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.auth-title h2 {
+  margin: 0 0 8px;
+}
+
+.auth-title p {
+  margin: 0;
+  color: #666;
+}
+
+.auth-box input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 13px;
+  margin-bottom: 12px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 16px;
+  direction: rtl;
+}
+
+.auth-submit,
+.auth-switch {
+  width: 100%;
+  padding: 13px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 5px;
+}
+
+.auth-submit {
+  border: none;
+  background: #087f73;
+  color: white;
+}
+
+.auth-switch {
+  border: 1px solid #ddd;
+  background: white;
+  color: #222;
+}
+
+#authMessage {
+  text-align: center;
+  margin: 12px 0;
+  min-height: 20px;
+}
+  </style>
 </head>
 
 <body>
