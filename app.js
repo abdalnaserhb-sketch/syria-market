@@ -92,3 +92,132 @@ async function getCurrentUser() {
 
   return data.user;
 }
+// ============================================
+// SYRIA MARKET - AUTH UI
+// ============================================
+
+let authMode = "login";
+
+// فتح نافذة الحساب
+function openAuth() {
+  const modal = document.getElementById("authModal");
+
+  if (modal) {
+    modal.style.display = "flex";
+    authMode = "login";
+    updateAuthUI();
+  }
+}
+
+// إغلاق نافذة الحساب
+function closeAuth() {
+  const modal = document.getElementById("authModal");
+
+  if (modal) {
+    modal.style.display = "none";
+  }
+}
+
+// التبديل بين تسجيل الدخول وإنشاء حساب
+function switchAuth() {
+  authMode = authMode === "login" ? "signup" : "login";
+  updateAuthUI();
+}
+
+// تحديث شكل النافذة
+function updateAuthUI() {
+  const title = document.getElementById("authTitle");
+  const submit = document.querySelector(".auth-submit");
+  const switchButton = document.querySelector(".auth-switch");
+  const fullName = document.getElementById("fullName");
+  const message = document.getElementById("authMessage");
+
+  if (authMode === "login") {
+
+    title.textContent = "تسجيل الدخول";
+    submit.textContent = "تسجيل الدخول";
+    switchButton.textContent = "إنشاء حساب جديد";
+
+    fullName.style.display = "none";
+
+  } else {
+
+    title.textContent = "إنشاء حساب جديد";
+    submit.textContent = "إنشاء الحساب";
+    switchButton.textContent = "لدي حساب بالفعل";
+
+    fullName.style.display = "block";
+  }
+
+  message.textContent = "";
+}
+
+// تنفيذ تسجيل الدخول أو التسجيل
+async function submitAuth() {
+
+  const email = document.getElementById("authEmail").value.trim();
+  const password = document.getElementById("authPassword").value;
+  const fullName = document.getElementById("fullName").value.trim();
+  const message = document.getElementById("authMessage");
+
+  if (!email || !password) {
+    message.textContent = "يرجى إدخال البريد الإلكتروني وكلمة المرور.";
+    return;
+  }
+
+  message.textContent = "جارٍ المعالجة...";
+
+  // تسجيل الدخول
+  if (authMode === "login") {
+
+    const result = await signIn(email, password);
+
+    if (!result.success) {
+      message.textContent = result.error;
+      return;
+    }
+
+    message.textContent = "تم تسجيل الدخول بنجاح.";
+
+    setTimeout(() => {
+      closeAuth();
+      updateUserStatus();
+    }, 800);
+
+  }
+
+  // إنشاء حساب
+  else {
+
+    const result = await signUp(email, password, fullName);
+
+    if (!result.success) {
+      message.textContent = result.error;
+      return;
+    }
+
+    message.textContent =
+      "تم إنشاء الحساب. تحقق من بريدك الإلكتروني إذا طُلب منك ذلك.";
+
+  }
+}
+
+// تحديث حالة الحساب في الواجهة
+async function updateUserStatus() {
+
+  const user = await getCurrentUser();
+  const status = document.getElementById("userStatus");
+
+  if (!status) return;
+
+  if (user) {
+    status.textContent = "حسابي";
+  } else {
+    status.textContent = "الحساب";
+  }
+}
+
+// تشغيل تحديث الحساب عند فتح الموقع
+document.addEventListener("DOMContentLoaded", () => {
+  updateUserStatus();
+});
