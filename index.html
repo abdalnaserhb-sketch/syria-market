@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Syria Market - السوق السوري الإلكتروني">
+  <title>Syria Market | السوق السوري</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, Tahoma, sans-serif;
+      background: #f5f6f8;
+      color: #222;
+      line-height: 1.6;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    button,
+    input {
+      font-family: inherit;
+    }
+
+    /* الهيدر */
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid #e5e7eb;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .top-bar {
+      max-width: 1200px;
+      margin: auto;
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .logo {
+      font-size: 25px;
+      font-weight: bold;
+      color: #146c43;
+      white-space: nowrap;
+    }
+
+    .logo span {
+      color: #d4a017;
+    }
+
+    .search {
+      flex: 1;
+      max-width: 550px;
+      position: relative;
+    }
+
+    .search input {
+      width: 100%;
+      padding: 13px 45px 13px 15px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      outline: none;
+      font-size: 15px;
+      background: #f8f9fa;
+    }
+
+    .search input:focus {
+      border-color: #146c43;
+      background: white;
+    }
+
+    .search-icon {
+      position: absolute;
+      right: 15px;
+      top: 10px;
+      font-size: 21px;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .action-btn {
+      border: none;
+      background: #f1f3f5;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .cart-btn {
+      background: #146c43;
+      color: white;
+    }
+
+    /* شريط التصنيفات */
+    nav {
+      background: #146c43;
+      color: white;
+    }
+
+    .nav-content {
+      max-width: 1200px;
+      margin: auto;
+      padding: 10px 20px;
+      display: flex;
+      gap: 25px;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    .nav-content a {
+      font-size: 14px;
+      opacity: 0.95;
+    }
+
+    .nav-content a:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+
+    /* البانر */
+    .hero {
+      max-width: 1200px;
+      margin: 25px auto;
+      padding: 55px 35px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #146c43, #198754);
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "🛍️";
+      position: absolute;
+      left: 50px;
+      top: 20px;
+      font-size: 120px;
+      opacity: 0.12;
+    }
+
+    .hero h1 {
+      font-size: 38px;
+      margin-bottom: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero p {
+      font-size: 18px;
+      max-width: 600px;
+      margin-bottom: 25px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero button {
+      border: none;
+      background: white;
+      color: #146c43;
+      padding: 13px 25px;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* الأقسام */
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 0 20px 40px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 30px 0 18px;
+    }
+
+    .section-title h2 {
+      font-size: 23px;
+    }
+
+    .section-title a {
+      color: #146c43;
+      font-size: 14px;
+    }
+
+    .categories {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 15px;
+    }
+
+    .category {
+      background: white;
+      border-radius: 14px;
+      padding: 20px 10px;
+      text-align: center;
+      cursor: pointer;
+      border: 1px solid #eee;
+      transition: 0.2s;
+    }
+
+    .category:hover {
+      transform: translateY(-3px);
+      border-color: #146c43;
+    }
+
+    .category-icon {
+      font-size: 35px;
+      margin-bottom: 8px;
+    }
+
+    .category strong {
+      display: block;
+      font-size: 14px;
+    }
+
+    /* المنتجات */
+    .products {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .product {
+      background: white;
+      border-radius: 15px;
+      overflow: hidden;
+      border: 1px solid #eee;
+      transition: 0.2s;
+    }
+
+    .product:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    }
+
+    .product-image {
+      height: 190px;
+      background: #eef1f3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 70px;
+    }
+
+    .product-info {
+      padding: 15px;
+    }
+
+    .product-info h3 {
+      font-size: 16px;
+      margin-bottom: 7px;
+    }
+
+    .product-info p {
+      color: #777;
+      font-size: 13px;
+      margin-bottom: 10px;
+    }
+
+    .price {
+      color: #146c43;
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .add-cart {
+      width: 100%;
+      border: none;
+      background: #146c43;
+      color: white;
+      padding: 10px;
+      border-radius: 9px;
+      cursor: pointer;
+    }
+
+    .add-cart:hover {
+      background: #0f5635;
+    }
+
+    /* الفوتر */
+    footer {
+      background: #17231d;
+      color: #ddd;
+      margin-top: 30px;
+    }
+
+    .footer-content {
+      max-width: 1200px;
+      margin: auto;
+      padding: 35px 20px;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 30px;
+    }
+
+    footer h3 {
+      color: white;
+      margin-bottom: 12px;
+    }
+
+    footer p,
+    footer a {
+      font-size: 14px;
+      color: #bbb;
+    }
+
+    .copyright {
+      text-align: center;
+      border-top: 1px solid #344139;
+      padding: 15px;
+      font-size: 13px;
+      color: #999;
+    }
+
+    /* الهاتف */
+    @media (max-width: 900px) {
+      .categories {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .products {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .footer-content {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .top-bar {
+        flex-wrap: wrap;
+        padding: 12px;
+      }
+
+      .logo {
+        font-size: 21px;
+      }
+
+      .search {
+        order: 3;
+        flex-basis: 100%;
+        max-width: none;
+      }
+
+      .actions .action-btn:first-child {
+        display: none;
+      }
+
+      .hero {
+        margin: 15px;
+        padding: 35px 22px;
+      }
+
+      .hero h1 {
+        font-size: 28px;
+      }
+
+      .hero p {
+        font-size: 15px;
+      }
+
+      .container {
+        padding: 0 15px 30px;
+      }
+
+      .categories {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 9px;
+      }
+
+      .category {
+        padding: 13px 5px;
+      }
+
+      .category-icon {
+        font-size: 28px;
+      }
+
+      .category strong {
+        font-size: 12px;
+      }
+
+      .products {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+
+      .product-image {
+        height: 140px;
+        font-size: 50px;
+      }
+
+      .product-info {
+        padding: 11px;
+      }
+
+      .product-info h3 {
+        font-size: 14px;
+      }
+
+      .price {
+        font-size: 16px;
+      }
+
+      .footer-content {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="top-bar">
+
+      <a href="#" class="logo">
+        Syria <span>Market</span>
+      </a>
+
+      <div class="search">
+        <span class="search-icon">🔎</span>
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="ابحث عن منتج..."
+          onkeyup="searchProducts()"
+        >
+      </div>
+
+      <div class="actions">
+        <button class="action-btn">تسجيل الدخول</button>
+        <button class="action-btn cart-btn">
+          🛒 السلة <span id="cartCount">0</span>
+        </button>
+      </div>
+
+    </div>
+
+    <nav>
+      <div class="nav-content">
+        <a href="#">الرئيسية</a>
+        <a href="#categories">التصنيفات</a>
+        <a href="#products">المنتجات</a>
+        <a href="#">العروض</a>
+        <a href="#">البائعون</a>
+        <a href="#">تواصل معنا</a>
+      </div>
+    </nav>
+  </header>
+
+
+  <section class="hero">
+    <h1>مرحبًا بك في Syria Market 🇸🇾</h1>
+
+    <p>
+      سوق إلكتروني سوري يجمع البائعين والمنتجات
+      ويوفر تجربة شراء سهلة وسريعة من الهاتف.
+    </p>
+
+    <button onclick="document.getElementById('products').scrollIntoView()">
+      ابدأ التسوق
+    </button>
+  </section>
+
+
+  <main class="container">
+
+    <div class="section-title" id="categories">
+      <h2>تصفح التصنيفات</h2>
+      <a href="#">عرض الكل</a>
+    </div>
+
+    <div class="categories">
+
+      <div class="category">
+        <div class="category-icon">📱</div>
+        <strong>إلكترونيات</strong>
+      </div>
+
+      <div class="category">
+        <div class="category-icon">👕</div>
+        <strong>ألبسة</strong>
+      </div>
+
+      <div class="category">
+        <div class="category-icon">🏠</div>
+        <strong>منزل</strong>
+      </div>
+
+      <div class="category">
+        <div class="category-icon">💄</div>
+        <strong>تجميل</strong>
+      </div>
+
+      <div class="category">
+        <div class="category-icon">🍎</div>
+        <strong>غذائيات</strong>
+      </div>
+
+      <div class="category">
+        <div class="category-icon">🚗</div>
+        <strong>سيارات</strong>
+      </div>
+
+    </div>
+
+
+    <div class="section-title" id="products">
+      <h2>منتجات مميزة</h2>
+      <a href="#">عرض جميع المنتجات</a>
+    </div>
+
+
+    <div class="products" id="productList">
+
+      <div class="product" data-name="هاتف ذكي">
+        <div class="product-image">📱</div>
+        <div class="product-info">
+          <h3>هاتف ذكي</h3>
+          <p>هاتف بمواصفات ممتازة</p>
+          <div class="price">1,250,000 ل.س</div>
+          <button class="add-cart" onclick="addToCart()">
+            أضف إلى السلة
+          </button>
+        </div>
+      </div>
+
+
+      <div class="product" data-name="سماعات لاسلكية">
+        <div class="product-image">🎧</div>
+        <div class="product-info">
+          <h3>سماعات لاسلكية</h3>
+          <p>صوت عالي الجودة</p>
+          <div class="price">350,000 ل.س</div>
+          <button class="add-cart" onclick="addToCart()">
+            أضف إلى السلة
+          </button>
+        </div>
+      </div>
+
+
+      <div class="product" data-name="حقيبة جلدية">
+        <div class="product-image">👜</div>
+        <div class="product-info">
+          <h3>حقيبة جلدية</h3>
+          <p>تصميم أنيق وعصري</p>
+          <div class="price">275,000 ل.س</div>
+          <button class="add-cart" onclick="addToCart()">
+            أضف إلى السلة
+          </button>
+        </div>
+      </div>
+
+
+      <div class="product" data-name="ساعة ذكية">
+        <div class="product-image">⌚</div>
+        <div class="product-info">
+          <h3>ساعة ذكية</h3>
+          <p>متابعة النشاط والإشعارات</p>
+          <div class="price">450,000 ل.س</div>
+          <button class="add-cart" onclick="addToCart()">
+            أضف إلى السلة
+          </button>
+        </div>
+      </div>
+
+
+      <div class="product" data-name="حذاء رياضي">
+        <div class="product-image">👟</div>
+        <div class="product-info">
+          <h3>حذاء رياضي</h3>
+          <p>مريح للاستخدام اليومي</p>
+          <div class="price">300,000 ل.س</div>
+          <button class="add-cart" onclick="addToCart()">
+            أضف إلى السلة
+          </button>
+        </div>
+      </div>
+
+
+      <div class="product" data-name="عطر">
+        <div class="product-image">🌹</div>
+        <div class="product-info">
+          <h3>عطر فاخر</h3>
+          <p>رائحة مميزة وثابتة</p>
+          <div class="price">200,000 ل.س</div>
+          <button class="add-cart" onclick="addToCart()">
+            أضف إلى السلة
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+
+  <footer>
+
+    <div class="footer-content">
+
+      <div>
+        <h3>Syria Market</h3>
+        <p>
+          منصة إلكترونية سورية تهدف إلى جمع البائعين
+          والمشترين في مكان واحد.
+        </p>
+      </div>
+
+      <div>
+        <h3>روابط</h3>
+        <p><a href="#">الرئيسية</a></p>
+        <p><a href="#">من نحن</a></p>
+        <p><a href="#">تواصل معنا</a></p>
+      </div>
+
+      <div>
+        <h3>الخدمات</h3>
+        <p>بيع المنتجات</p>
+        <p>شراء المنتجات</p>
+        <p>حسابات البائعين</p>
+      </div>
+
+    </div>
+
+    <div class="copyright">
+      © 2026 Syria Market - جميع الحقوق محفوظة
+    </div>
+
+  </footer>
+
+
+  <script>
+
+    let cartCount = 0;
+
+    function addToCart() {
+      cartCount++;
+      document.getElementById("cartCount").textContent = cartCount;
+
+      alert("تمت إضافة المنتج إلى السلة 🛒");
+    }
+
+
+    function searchProducts() {
+
+      const search =
+        document.getElementById("searchInput")
+        .value
+        .toLowerCase();
+
+      const products =
+        document.querySelectorAll(".product");
+
+      products.forEach(product => {
+
+        const name =
+          product.getAttribute("data-name")
+          .toLowerCase();
+
+        if (name.includes(search)) {
+          product.style.display = "";
+        } else {
+          product.style.display = "none";
+        }
+
+      });
+
+    }
+
+  </script>
+
+</body>
+</html>
