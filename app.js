@@ -1,223 +1,352 @@
 // ============================================
-// SYRIA MARKET - SUPABASE CONNECTION
+// SYRIA MARKET - SUPABASE
 // ============================================
 
 const SUPABASE_URL = "https://ickurcxnyotujnutvfxi.supabase.co";
 
+const SUPABASE_PUBLISHABLE_KEY =
+  "sb_publishable_jkgJH6Bc__qkrCChS9iFQw_x6D8lhel";
 
-const SUPABASE_PUBLISHABLE_KEY = sb_publishable_jkgJH6Bc__qkrCChS9iFQw_x6D8lhel
-
-const supabaseClient = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY
-);
-
-console.log("Syria Market: Supabase connected");
 
 // ============================================
-// AUTHENTICATION
+// SUPABASE CLIENT
 // ============================================
 
-async function signUp(email, password, fullName = "") {
-  const { data, error } = await supabaseClient.auth.signUp({
-    email: email,
-    password: password
-  });
+let supabaseClient = null;
 
-  if (error) {
-    console.error("Sign up error:", error.message);
-    return { success: false, error: error.message };
+try {
+
+  if (window.supabase) {
+
+    supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY
+    );
+
+    console.log("Syria Market: Supabase connected");
+
+  } else {
+
+    console.error("Supabase library not loaded");
+
   }
 
-  if (data.user) {
-    const { error: profileError } = await supabaseClient
-      .from("profiles")
-      .insert({
-        id: data.user.id,
-        full_name: fullName,
-        role: "customer"
+} catch (error) {
+
+  console.error(
+    "Supabase initialization error:",
+    error
+  );
+
+}
+
+
+// ============================================
+// SIGN UP
+// ============================================
+
+async function signUp(
+  email,
+  password,
+  fullName = ""
+) {
+
+  if (!supabaseClient) {
+
+    return {
+      success: false,
+      error: "الاتصال بقاعدة البيانات غير متاح."
+    };
+
+  }
+
+  try {
+
+    const { data, error } =
+      await supabaseClient.auth.signUp({
+
+        email: email,
+        password: password,
+
+        options: {
+          data: {
+            full_name: fullName
+          }
+        }
+
       });
 
-    if (profileError) {
-      console.error("Profile error:", profileError.message);
+
+    if (error) {
+
+      console.error(
+        "Sign up error:",
+        error.message
+      );
+
+      return {
+        success: false,
+        error: error.message
+      };
+
     }
+
+
+    // إنشاء ملف المستخدم إذا كان الحساب قد أُنشئ
+    if (data?.user) {
+
+      try {
+
+        const { error: profileError } =
+          await supabaseClient
+            .from("profiles")
+            .upsert({
+
+              id: data.user.id,
+              full_name: fullName,
+              role: "customer"
+
+            });
+
+
+        if (profileError) {
+
+          console.warn(
+            "Profile creation warning:",
+            profileError.message
+          );
+
+        }
+
+      } catch (profileError) {
+
+        console.warn(
+          "Profile error:",
+          profileError
+        );
+
+      }
+
+    }
+
+
+    return {
+      success: true,
+      data: data
+    };
+
+
+  } catch (error) {
+
+    console.error(
+      "Sign up exception:",
+      error
+    );
+
+    return {
+      success: false,
+      error:
+        error.message ||
+        "حدث خطأ أثناء إنشاء الحساب."
+    };
+
   }
 
-  return { success: true, data: data };
 }
+
 
 // ============================================
 // LOGIN
 // ============================================
 
-async function signIn(email, password) {
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email: email,
-    password: password
-  });
+async function signIn(
+  email,
+  password
+) {
 
-  if (error) {
-    console.error("Login error:", error.message);
-    return { success: false, error: error.message };
+  if (!supabaseClient) {
+
+    return {
+      success: false,
+      error: "الاتصال بقاعدة البيانات غير متاح."
+    };
+
   }
 
-  return { success: true, data: data };
+  try {
+
+    const { data, error } =
+      await supabaseClient.auth.signInWithPassword({
+
+        email: email,
+        password: password
+
+      });
+
+
+    if (error) {
+
+      console.error(
+        "Login error:",
+        error.message
+      );
+
+      return {
+        success: false,
+        error: error.message
+      };
+
+    }
+
+
+    return {
+      success: true,
+      data: data
+    };
+
+
+  } catch (error) {
+
+    console.error(
+      "Login exception:",
+      error
+    );
+
+    return {
+      success: false,
+      error:
+        error.message ||
+        "حدث خطأ أثناء تسجيل الدخول."
+    };
+
+  }
+
 }
+
 
 // ============================================
 // LOGOUT
 // ============================================
 
 async function signOut() {
-  const { error } = await supabaseClient.auth.signOut();
 
-  if (error) {
-    console.error("Logout error:", error.message);
-    return { success: false, error: error.message };
+  if (!supabaseClient) {
+
+    return {
+      success: false,
+      error: "الاتصال بقاعدة البيانات غير متاح."
+    };
+
   }
 
-  return { success: true };
+  try {
+
+    const { error } =
+      await supabaseClient.auth.signOut();
+
+
+    if (error) {
+
+      console.error(
+        "Logout error:",
+        error.message
+      );
+
+      return {
+        success: false,
+        error: error.message
+      };
+
+    }
+
+
+    return {
+      success: true
+    };
+
+
+  } catch (error) {
+
+    console.error(
+      "Logout exception:",
+      error
+    );
+
+    return {
+      success: false,
+      error:
+        error.message ||
+        "حدث خطأ أثناء تسجيل الخروج."
+    };
+
+  }
+
 }
+
 
 // ============================================
 // CURRENT USER
 // ============================================
 
 async function getCurrentUser() {
-  const { data, error } = await supabaseClient.auth.getUser();
 
-  if (error) {
+  if (!supabaseClient) {
     return null;
   }
 
-  return data.user;
-}
-// ============================================
-// SYRIA MARKET - AUTH UI
-// ============================================
+  try {
 
-let authMode = "login";
+    const { data, error } =
+      await supabaseClient.auth.getUser();
 
-// فتح نافذة الحساب
-function openAuth() {
-  const modal = document.getElementById("authModal");
 
-  if (modal) {
-    modal.style.display = "flex";
-    authMode = "login";
-    updateAuthUI();
-  }
-}
-
-// إغلاق نافذة الحساب
-function closeAuth() {
-  const modal = document.getElementById("authModal");
-
-  if (modal) {
-    modal.style.display = "none";
-  }
-}
-
-// التبديل بين تسجيل الدخول وإنشاء حساب
-function switchAuth() {
-  authMode = authMode === "login" ? "signup" : "login";
-  updateAuthUI();
-}
-
-// تحديث شكل النافذة
-function updateAuthUI() {
-  const title = document.getElementById("authTitle");
-  const submit = document.querySelector(".auth-submit");
-  const switchButton = document.querySelector(".auth-switch");
-  const fullName = document.getElementById("fullName");
-  const message = document.getElementById("authMessage");
-
-  if (authMode === "login") {
-
-    title.textContent = "تسجيل الدخول";
-    submit.textContent = "تسجيل الدخول";
-    switchButton.textContent = "إنشاء حساب جديد";
-
-    fullName.style.display = "none";
-
-  } else {
-
-    title.textContent = "إنشاء حساب جديد";
-    submit.textContent = "إنشاء الحساب";
-    switchButton.textContent = "لدي حساب بالفعل";
-
-    fullName.style.display = "block";
-  }
-
-  message.textContent = "";
-}
-
-// تنفيذ تسجيل الدخول أو التسجيل
-async function submitAuth() {
-
-  const email = document.getElementById("authEmail").value.trim();
-  const password = document.getElementById("authPassword").value;
-  const fullName = document.getElementById("fullName").value.trim();
-  const message = document.getElementById("authMessage");
-
-  if (!email || !password) {
-    message.textContent = "يرجى إدخال البريد الإلكتروني وكلمة المرور.";
-    return;
-  }
-
-  message.textContent = "جارٍ المعالجة...";
-
-  // تسجيل الدخول
-  if (authMode === "login") {
-
-    const result = await signIn(email, password);
-
-    if (!result.success) {
-      message.textContent = result.error;
-      return;
+    if (error) {
+      return null;
     }
 
-    message.textContent = "تم تسجيل الدخول بنجاح.";
 
-    setTimeout(() => {
-      closeAuth();
-      updateUserStatus();
-    }, 800);
+    return data?.user || null;
+
+
+  } catch (error) {
+
+    console.error(
+      "Get user error:",
+      error
+    );
+
+    return null;
 
   }
 
-  // إنشاء حساب
-  else {
+}
 
-    const result = await signUp(email, password, fullName);
 
-    if (!result.success) {
-      message.textContent = result.error;
-      return;
+// ============================================
+// AUTH STATE LISTENER
+// ============================================
+
+if (supabaseClient) {
+
+  supabaseClient.auth.onAuthStateChange(
+    function (event, session) {
+
+      console.log(
+        "Syria Market auth:",
+        event
+      );
+
+      // تحديث واجهة الحساب إذا كانت الدالة موجودة
+      if (
+        typeof window.updateUserStatus ===
+        "function"
+      ) {
+
+        window.updateUserStatus();
+
+      }
+
     }
+  );
 
-    message.textContent =
-      "تم إنشاء الحساب. تحقق من بريدك الإلكتروني إذا طُلب منك ذلك.";
-
-  }
 }
-
-// تحديث حالة الحساب في الواجهة
-async function updateUserStatus() {
-
-  const user = await getCurrentUser();
-  const status = document.getElementById("userStatus");
-
-  if (!status) return;
-
-  if (user) {
-    status.textContent = "حسابي";
-  } else {
-    status.textContent = "الحساب";
-  }
-}
-
-// تشغيل تحديث الحساب عند فتح الموقع
-document.addEventListener("DOMContentLoaded", () => {
-  updateUserStatus();
-});
