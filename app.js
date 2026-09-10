@@ -385,7 +385,8 @@ async function createOrderInSupabase(checkoutData, cartItems) {
         .insert(itemsPayload);
 
       if (itemsError) {
-        console.warn("Order items save warning:", itemsError.message);
+        console.error("Order items save error:", itemsError.message);
+        return { success: false, error: itemsError.message || "فشل حفظ تفاصيل عناصر الطلب" };
       }
     }
 
@@ -483,13 +484,32 @@ async function addSellerProduct(productData) {
   }
 
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return { success: false, error: "يرجى تسجيل الدخول كبائع لإضافة منتج." };
+    }
+
+    let sellerId = productData.sellerId || productData.seller_id || null;
+
+    if (!sellerId) {
+      const sellers = await fetchSellersFromSupabase();
+      const myStore = Array.isArray(sellers) ? sellers.find(s => s.user_id === user.id) : null;
+      if (myStore) {
+        sellerId = myStore.id;
+      }
+    }
+
+    if (!sellerId) {
+      return { success: false, error: "لم يتم العثور على متجر مسجل لهذا المستخدم." };
+    }
+
     const payload = {
       name: productData.name,
       price: productData.price,
       description: productData.description || "",
       image_url: productData.imageUrl || "",
       is_active: true,
-      seller_id: productData.sellerId || productData.seller_id || null,
+      seller_id: sellerId,
       category_id: productData.categoryId || productData.category_id || null
     };
 
