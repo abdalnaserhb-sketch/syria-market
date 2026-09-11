@@ -267,7 +267,7 @@ async function getCurrentUser() {
 }
 
 /**
- * Update product details or stock as seller
+ * Update product details or stock as seller with strict ownership verification
  */
 async function updateSellerProduct(productId, updates) {
   if (!supabaseClient) {
@@ -275,6 +275,34 @@ async function updateSellerProduct(productId, updates) {
   }
 
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return { success: false, error: "يرجى تسجيل الدخول كبائع لتعديل المنتج." };
+    }
+
+    // Resolve user's seller_id from database
+    const sellers = await fetchSellersFromSupabase();
+    const myStore = Array.isArray(sellers) ? sellers.find(s => String(s.user_id) === String(user.id)) : null;
+
+    if (!myStore) {
+      return { success: false, error: "غير مصرح: لم يتم العثور على متجر لهذا حساب." };
+    }
+
+    // Verify product ownership before updating
+    const { data: targetProduct, error: fetchErr } = await supabaseClient
+      .from("products")
+      .select("id, seller_id")
+      .eq("id", productId)
+      .maybeSingle();
+
+    if (fetchErr || !targetProduct) {
+      return { success: false, error: "المنتج غير موجود." };
+    }
+
+    if (String(targetProduct.seller_id) !== String(myStore.id)) {
+      return { success: false, error: "غير مصرح: لا يمكنك تعديل منتجات متجر آخر." };
+    }
+
     const payload = {
       ...updates,
       updated_at: new Date().toISOString()
@@ -284,6 +312,7 @@ async function updateSellerProduct(productId, updates) {
       .from("products")
       .update(payload)
       .eq("id", productId)
+      .eq("seller_id", myStore.id)
       .select("*, sellers(*), categories(*)");
 
     if (error) throw error;
@@ -589,7 +618,7 @@ async function registerSellerStore(storeData) {
 
 
 /**
- * Add product as a seller
+ * Add product as a seller with strict seller_id resolution from authenticated user
  */
 async function addSellerProduct(productData) {
   if (!supabaseClient) {
@@ -602,27 +631,22 @@ async function addSellerProduct(productData) {
       return { success: false, error: "يرجى تسجيل الدخول كبائع لإضافة منتج." };
     }
 
-    let sellerId = productData.sellerId || productData.seller_id || null;
+    // Always resolve seller_id strictly from the database for the authenticated user
+    const sellers = await fetchSellersFromSupabase();
+    const myStore = Array.isArray(sellers) ? sellers.find(s => String(s.user_id) === String(user.id)) : null;
 
-    if (!sellerId) {
-      const sellers = await fetchSellersFromSupabase();
-      const myStore = Array.isArray(sellers) ? sellers.find(s => s.user_id === user.id) : null;
-      if (myStore) {
-        sellerId = myStore.id;
-      }
-    }
-
-    if (!sellerId) {
+    if (!myStore) {
       return { success: false, error: "لم يتم العثور على متجر مسجل لهذا المستخدم." };
     }
 
     const payload = {
       name: productData.name,
       price: productData.price,
+      stock: productData.stock !== undefined && productData.stock !== null ? Number(productData.stock) : 10,
       description: productData.description || "",
-      image_url: productData.imageUrl || "",
-      is_active: true,
-      seller_id: sellerId,
+      image_url: productData.imageUrl || productData.image_url || "",
+      is_active: productData.is_active !== undefined ? Boolean(productData.is_active) : true,
+      seller_id: myStore.id,
       category_id: productData.categoryId || productData.category_id || null
     };
 
@@ -636,7 +660,7 @@ async function addSellerProduct(productData) {
     return { success: true, data };
   } catch (error) {
     console.error("addSellerProduct error:", error);
-    return { success: false, error: error.message || "فشل إضافة المنتج." };
+    return { success: false, error: translateAuthError(error.message) || "فشل إضافة المنتج." };
   }
 }
 

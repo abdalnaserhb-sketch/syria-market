@@ -1937,20 +1937,24 @@
       try {
 
         let data = null;
+        let fetchedFromDB = false;
+
         if (typeof fetchProductsFromSupabase === "function") {
           data = await fetchProductsFromSupabase();
+          if (data !== null) fetchedFromDB = true;
         } else if (typeof supabaseClient !== "undefined" && supabaseClient) {
-          const res = await supabaseClient.from("products").select("*");
+          const res = await supabaseClient.from("products").select("*, sellers(*), categories(*)");
           data = res.data;
+          if (data !== null) fetchedFromDB = true;
         }
 
-        const normalized = Array.isArray(data) && data.length > 0
-          ? data.map(normalizeProduct)
-          : [];
-
-        allProducts = normalized.length
-          ? normalized
-          : DEMO_PRODUCTS.map(normalizeProduct);
+        if (fetchedFromDB) {
+          // Connected to Supabase successfully
+          allProducts = Array.isArray(data) ? data.map(normalizeProduct) : [];
+        } else {
+          // Fallback if client or connection is completely uninitialized
+          allProducts = DEMO_PRODUCTS.map(normalizeProduct);
+        }
 
       } catch (error) {
 
@@ -1959,7 +1963,7 @@
           error
         );
 
-        allProducts = [...DEMO_PRODUCTS];
+        allProducts = DEMO_PRODUCTS.map(normalizeProduct);
       }
 
       displayedProducts = [...allProducts];
@@ -3168,6 +3172,23 @@
         message.textContent = "السلة فارغة!";
         message.className = "auth-message error";
         return;
+      }
+
+      // Check stock limits before submitting checkout
+      for (const cartItem of cart) {
+        const liveProduct = allProducts.find(p => String(p.id) === String(cartItem.id));
+        if (liveProduct) {
+          if (liveProduct.stock <= 0) {
+            message.textContent = `عذراً، المنتج "${cartItem.name}" نفد من المخزون. يرجى إزالته من السلة.`;
+            message.className = "auth-message error";
+            return;
+          }
+          if (cartItem.quantity > liveProduct.stock) {
+            message.textContent = `عذراً، الكمية المطلوبة من "${cartItem.name}" (${cartItem.quantity}) تتجاوز المخزون المتاح (${liveProduct.stock}).`;
+            message.className = "auth-message error";
+            return;
+          }
+        }
       }
 
       message.textContent = "جارٍ إرسال الطلب...";
