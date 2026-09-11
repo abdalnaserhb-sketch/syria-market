@@ -1948,22 +1948,20 @@
           if (data !== null) fetchedFromDB = true;
         }
 
-        if (fetchedFromDB) {
-          // Connected to Supabase successfully
-          allProducts = Array.isArray(data) ? data.map(normalizeProduct) : [];
+        if (fetchedFromDB && Array.isArray(data)) {
+          allProducts = data.map(normalizeProduct);
         } else {
-          // Fallback if client or connection is completely uninitialized
-          allProducts = DEMO_PRODUCTS.map(normalizeProduct);
+          allProducts = [];
         }
 
       } catch (error) {
 
         console.warn(
-          "تعذر تحميل المنتجات من Supabase، سيتم عرض المنتجات التجريبية.",
+          "تعذر تحميل المنتجات من Supabase.",
           error
         );
 
-        allProducts = DEMO_PRODUCTS.map(normalizeProduct);
+        allProducts = [];
       }
 
       displayedProducts = [...allProducts];
@@ -2026,6 +2024,8 @@
             stockBadge = `<span style="background:#fee2e2;color:#dc2626;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:bold;">نفدت الكمية</span>`;
           } else if (product.stock <= 3) {
             stockBadge = `<span style="background:#fef3c7;color:#d97706;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:bold;">كمية محدودة (${product.stock})</span>`;
+          } else {
+            stockBadge = `<span style="background:#dcfce7;color:#15803d;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:bold;">متوفر</span>`;
           }
 
           return `
