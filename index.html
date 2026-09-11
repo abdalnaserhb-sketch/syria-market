@@ -1290,13 +1290,66 @@
 
       <div id="authMessage" class="auth-message"></div>
 
-      <button
-        class="secondary-btn"
-        id="authSwitch"
-        onclick="switchAuthMode()"
-      >
-        إنشاء حساب جديد
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+        <button
+          class="secondary-btn"
+          id="authSwitch"
+          style="margin-top: 0; width: 48%;"
+          onclick="switchAuthMode()"
+        >
+          إنشاء حساب جديد
+        </button>
+
+        <button
+          class="secondary-btn"
+          id="forgotPasswordBtn"
+          style="margin-top: 0; width: 48%; font-size: 12px;"
+          onclick="handleForgotPassword()"
+        >
+          نسيت كلمة المرور؟
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- =========================
+       RESET PASSWORD MODAL
+  ========================== -->
+
+  <div class="modal" id="resetPasswordModal">
+
+    <div class="modal-box">
+
+      <button class="modal-close" onclick="closeModal('resetPasswordModal')">
+        ×
       </button>
+
+      <div class="modal-title">
+        <h2>تعيين كلمة مرور جديدة</h2>
+        <p>أدخل كلمة المرور الجديدة لحسابك في Syria Market</p>
+      </div>
+
+      <div class="form-group">
+        <label for="newPasswordInput">كلمة المرور الجديدة</label>
+        <input
+          type="password"
+          class="form-control"
+          id="newPasswordInput"
+          placeholder="كلمة المرور الجديدة (6 أحرف على الأقل)"
+          autocomplete="new-password"
+        >
+      </div>
+
+      <button
+        class="primary-btn"
+        onclick="submitNewPassword()"
+      >
+        حفظ كلمة المرور الجديدة
+      </button>
+
+      <div id="resetPasswordMsg" class="auth-message"></div>
 
     </div>
 
@@ -1355,15 +1408,20 @@
 
         <!-- Add Product Form -->
         <div id="sellerAddProductForm" style="display:none;background:#f8fafc;padding:15px;border-radius:12px;margin-bottom:20px;border:1px solid var(--border);">
-          <h4 style="margin-bottom:10px;font-size:15px;">إضافة منتج جديد</h4>
+          <h4 style="margin-bottom:10px;font-size:15px;" id="sellerFormTitle">إضافة منتج جديد</h4>
+          <input type="hidden" id="editProdId" value="">
           <div class="form-group">
             <label for="newProdName">اسم المنتج</label>
             <input type="text" class="form-control" id="newProdName" placeholder="اسم المنتج">
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
             <div class="form-group">
               <label for="newProdPrice">السعر (ل.س)</label>
               <input type="number" class="form-control" id="newProdPrice" placeholder="250000">
+            </div>
+            <div class="form-group">
+              <label for="newProdStock">الكمية بالمخزون</label>
+              <input type="number" class="form-control" id="newProdStock" placeholder="10" value="10">
             </div>
             <div class="form-group">
               <label for="newProdCategory">التصنيف</label>
@@ -1373,16 +1431,20 @@
             </div>
           </div>
           <div class="form-group">
-            <label for="newProdImage">رابط صورة المنتج (اخنياري)</label>
+            <label for="newProdDesc">وصف المنتج</label>
+            <textarea class="form-control" id="newProdDesc" placeholder="تفاصيل ومواصفات المنتج..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="newProdImage">رابط صورة المنتج (اختياري)</label>
             <input type="url" class="form-control" id="newProdImage" placeholder="https://...">
           </div>
-          <button class="primary-btn" onclick="submitSellerAddProduct()">نشر المنتج</button>
+          <button class="primary-btn" id="sellerSubmitProdBtn" onclick="submitSellerAddProduct()">نشر المنتج</button>
           <div id="sellerAddProdMsg" class="auth-message"></div>
         </div>
 
         <div>
           <h4 style="margin-bottom:10px;font-size:15px;">منتجات متجري</h4>
-          <div id="sellerProductsList" style="max-height:220px;overflow-y:auto;">
+          <div id="sellerProductsList" style="max-height:280px;overflow-y:auto;">
             <p style="color:var(--muted);text-align:center;">جاري تحميل المنتجات...</p>
           </div>
         </div>
@@ -1439,6 +1501,10 @@
 
         <div id="accountProfileSection" style="margin-bottom: 20px; text-align: right; border-top: 1px solid var(--border); padding-top: 15px;">
           <h4 style="margin-bottom: 10px; font-size: 15px; color: var(--dark);">البيانات الشخصية</h4>
+          <div class="form-group">
+            <label for="profileFullName">الاسم الكامل</label>
+            <input type="text" class="form-control" id="profileFullName" placeholder="الاسم الكامل">
+          </div>
           <div class="form-group">
             <label for="profilePhone">رقم الهاتف</label>
             <input type="tel" class="form-control" id="profilePhone" placeholder="رقم الهاتف">
@@ -1582,6 +1648,49 @@
       </button>
 
       <div id="checkoutMessage" class="auth-message"></div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================
+       PRODUCT DETAIL MODAL
+  ========================== -->
+
+  <div class="modal" id="productDetailModal">
+
+    <div class="modal-box modal-large">
+
+      <button class="modal-close" onclick="closeModal('productDetailModal')">
+        ×
+      </button>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;" id="productDetailBody">
+        <div id="productDetailImgContainer" style="height: 260px; background: #f1f5f9; border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; font-size: 80px;">
+          📦
+        </div>
+        <div>
+          <span id="productDetailCategory" style="color: var(--primary); font-size: 12px; font-weight: bold;">تصنيف</span>
+          <h2 id="productDetailTitle" style="font-size: 22px; color: var(--dark); margin: 6px 0;">اسم المنتج</h2>
+          <div id="productDetailSeller" style="color: var(--muted); font-size: 13px; margin-bottom: 12px;">المتجر: متجر سوري</div>
+
+          <p id="productDetailDescription" style="font-size: 14px; color: #4b5563; margin-bottom: 18px; line-height: 1.6;">
+            وصف المنتج...
+          </p>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 15px; margin-top: 15px;">
+            <div>
+              <span style="font-size: 12px; color: var(--muted); display: block;">السعر</span>
+              <span id="productDetailPrice" style="font-size: 20px; font-weight: 900; color: var(--primary);">0 ل.س</span>
+            </div>
+            <div>
+              <span id="productDetailStockBadge" style="font-size: 12px; display: block; text-align: left; margin-bottom: 4px;">متوفر</span>
+              <button id="productDetailAddBtn" class="primary-btn" style="padding: 10px 20px; height: auto;">🛒 إضافة للسلة</button>
+            </div>
+          </div>
+        </div>
+      </div>
 
     </div>
 
@@ -1794,6 +1903,20 @@
         product.thumbnail ||
         "";
 
+      const stock =
+        product.stock !== undefined && product.stock !== null
+          ? getNumber(product.stock)
+          : 99;
+
+      const isActive =
+        product.is_active !== undefined && product.is_active !== null
+          ? Boolean(product.is_active)
+          : true;
+
+      const description =
+        product.description ||
+        "لا يوجد وصف متاح لهذا المنتج.";
+
       return {
         id: product.id,
         name: String(name),
@@ -1803,6 +1926,9 @@
         seller_id: product.seller_id || product.sellers?.id || null,
         category_id: product.category_id || product.categories?.id || null,
         image: String(image),
+        stock: stock,
+        is_active: isActive,
+        description: String(description),
         icon: product.icon || "🛍️",
         raw: product
       };
@@ -1868,7 +1994,7 @@
 
         allProducts = normalized.length
           ? normalized
-          : [...DEMO_PRODUCTS];
+          : DEMO_PRODUCTS.map(normalizeProduct);
 
       } catch (error) {
 
@@ -1877,12 +2003,62 @@
           error
         );
 
-        allProducts = [...DEMO_PRODUCTS];
+        allProducts = DEMO_PRODUCTS.map(normalizeProduct);
       }
 
-      displayedProducts = [...allProducts];
+      displayedProducts = allProducts.filter(p => p.is_active);
 
       renderProducts();
+    }
+
+
+    function openProductDetails(productId) {
+      const product = allProducts.find(p => String(p.id) === String(productId));
+      if (!product) return;
+
+      const imgContainer = document.getElementById("productDetailImgContainer");
+      const categoryEl = document.getElementById("productDetailCategory");
+      const titleEl = document.getElementById("productDetailTitle");
+      const sellerEl = document.getElementById("productDetailSeller");
+      const descEl = document.getElementById("productDetailDescription");
+      const priceEl = document.getElementById("productDetailPrice");
+      const stockBadge = document.getElementById("productDetailStockBadge");
+      const addBtn = document.getElementById("productDetailAddBtn");
+
+      if (imgContainer) {
+        if (product.image) {
+          imgContainer.innerHTML = `<img src="${escapeHTML(product.image)}" alt="${escapeHTML(product.name)}" style="width:100%;height:100%;object-fit:cover;">`;
+        } else {
+          imgContainer.innerHTML = `<span>${escapeHTML(product.icon)}</span>`;
+        }
+      }
+
+      if (categoryEl) categoryEl.textContent = product.category;
+      if (titleEl) titleEl.textContent = product.name;
+      if (sellerEl) sellerEl.textContent = "المتجر: " + product.seller;
+      if (descEl) descEl.textContent = product.description;
+      if (priceEl) priceEl.textContent = formatPrice(product.price);
+
+      if (stockBadge && addBtn) {
+        if (product.stock <= 0) {
+          stockBadge.textContent = "غير متوفر ❌";
+          stockBadge.style.color = "var(--danger)";
+          addBtn.disabled = true;
+          addBtn.style.opacity = "0.5";
+          addBtn.onclick = null;
+        } else {
+          stockBadge.textContent = `متوفر بالمخزون (${product.stock}) ✅`;
+          stockBadge.style.color = "#16a34a";
+          addBtn.disabled = false;
+          addBtn.style.opacity = "1";
+          addBtn.onclick = function() {
+            addProductToCart(product.id);
+            closeModal("productDetailModal");
+          };
+        }
+      }
+
+      openModal("productDetailModal");
     }
 
 
@@ -1914,6 +2090,7 @@
           const safeSeller = escapeHTML(product.seller);
           const safeCategory = escapeHTML(product.category);
           const safeImage = escapeHTML(product.image);
+          const isOutOfStock = product.stock <= 0;
 
           let imageHTML;
 
@@ -1932,8 +2109,14 @@
             `;
           }
 
+          const stockBadgeHTML = isOutOfStock
+            ? `<span style="background:var(--danger);color:white;font-size:10px;padding:2px 8px;border-radius:10px;position:absolute;top:8px;right:8px;font-weight:bold;">غير متوفر</span>`
+            : ``;
+
           return `
-            <article class="product-card">
+            <article class="product-card" style="position:relative;cursor:pointer;" onclick="openProductDetails('${safeId}')">
+
+              ${stockBadgeHTML}
 
               <div class="product-image">
                 ${imageHTML}
@@ -1953,7 +2136,7 @@
                   ${safeSeller}
                 </div>
 
-                <div class="product-bottom">
+                <div class="product-bottom" onclick="event.stopPropagation();">
 
                   <div class="product-price">
                     ${formatPrice(product.price)}
@@ -1961,9 +2144,10 @@
 
                   <button
                     class="add-btn"
+                    ${isOutOfStock ? "disabled style='opacity:0.5;cursor:not-allowed;'" : ""}
                     onclick="addProductToCart('${safeId}')"
                   >
-                    🛒 أضف
+                    ${isOutOfStock ? "غير متوفر" : "🛒 أضف"}
                   </button>
 
                 </div>
@@ -2197,12 +2381,21 @@
         return;
       }
 
+      if (product.stock <= 0) {
+        showToast("عذراً، هذا المنتج غير متوفر بالمخزون حالياً.");
+        return;
+      }
+
       const existing =
         cart.find(
           item => String(item.id) === String(product.id)
         );
 
       if (existing) {
+        if (existing.quantity >= product.stock) {
+          showToast(`الكمية القصوى المتاحة بالمخزون هي ${product.stock}`);
+          return;
+        }
         existing.quantity++;
       } else {
 
@@ -2214,6 +2407,7 @@
           category: product.category,
           icon: product.icon,
           image: product.image,
+          stock: product.stock,
           quantity: 1
         });
 
@@ -2234,6 +2428,14 @@
         );
 
       if (!item) return;
+
+      const productRef = allProducts.find(p => String(p.id) === String(productId));
+      const maxStock = productRef ? productRef.stock : (item.stock || 99);
+
+      if (amount > 0 && item.quantity >= maxStock) {
+        showToast(`الكمية القصوى المتاحة بالمخزون هي ${maxStock}`);
+        return;
+      }
 
       item.quantity += amount;
 
@@ -2454,6 +2656,72 @@
     }
 
 
+    async function handleForgotPassword() {
+      const email = document.getElementById("authEmail").value.trim();
+      const message = document.getElementById("authMessage");
+
+      if (!email) {
+        message.textContent = "يرجى إدخال البريد الإلكتروني أولاً في حقل البريد أعلاه.";
+        message.className = "auth-message error";
+        return;
+      }
+
+      message.textContent = "جاري إرسال رابط إعادة تعيين كلمة المرور...";
+      message.className = "auth-message";
+
+      if (typeof resetPasswordForEmail === "function") {
+        const res = await resetPasswordForEmail(email);
+        if (res.success) {
+          message.textContent = "تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني بنجاح 📧";
+          message.className = "auth-message success";
+        } else {
+          message.textContent = res.error || "فشل إرسال رابط إعادة تعيين كلمة المرور.";
+          message.className = "auth-message error";
+        }
+      }
+    }
+
+    async function submitNewPassword() {
+      const newPassword = document.getElementById("newPasswordInput").value;
+      const msg = document.getElementById("resetPasswordMsg");
+
+      if (!newPassword || newPassword.length < 6) {
+        msg.textContent = "كلمة المرور يجب أن تتكون من 6 أحرف أو أرقام على الأقل.";
+        msg.className = "auth-message error";
+        return;
+      }
+
+      msg.textContent = "جاري حفظ كلمة المرور...";
+      msg.className = "auth-message";
+
+      if (typeof updateUserPassword === "function") {
+        const res = await updateUserPassword(newPassword);
+        if (res.success) {
+          msg.textContent = "تم تغيير كلمة المرور بنجاح! يمكنك الآن استخدام كلمة المرور الجديدة.";
+          msg.className = "auth-message success";
+          setTimeout(() => {
+            closeModal("resetPasswordModal");
+            openAuth();
+          }, 1500);
+        } else {
+          msg.textContent = res.error || "فشل تغيير كلمة المرور.";
+          msg.className = "auth-message error";
+        }
+      }
+    }
+
+    async function checkUrlAuthTokens() {
+      const hash = window.location.hash;
+      const search = window.location.search;
+
+      if (hash.includes("type=recovery") || search.includes("type=recovery")) {
+        showToast("يمكنك الآن تغيير كلمة المرور الخاصة بك.");
+        openModal("resetPasswordModal");
+      } else if (hash.includes("type=signup") || hash.includes("access_token=") || search.includes("code=")) {
+        showToast("تم تأكيد حسابك بنجاح! أهلاً بك في السوق السوري 🇸🇾");
+      }
+    }
+
     async function submitAuthForm() {
 
       const email =
@@ -2616,6 +2884,7 @@
 
 
     async function saveProfileChanges() {
+      const fullName = document.getElementById("profileFullName")?.value.trim();
       const phone = document.getElementById("profilePhone")?.value.trim();
       const city = document.getElementById("profileCity")?.value.trim();
       const msg = document.getElementById("profileMessage");
@@ -2626,11 +2895,16 @@
       }
 
       if (typeof updateUserProfile === "function") {
-        const res = await updateUserProfile({ phone, city });
+        const res = await updateUserProfile({ full_name: fullName, phone, city });
         if (msg) {
           if (res.success) {
             msg.textContent = "تم حفظ البيانات بنجاح ✅";
             msg.className = "auth-message success";
+
+            if (fullName) {
+              const nameEl = document.getElementById("accountName");
+              if (nameEl) nameEl.textContent = fullName;
+            }
           } else {
             msg.textContent = res.error || "تعذر حفظ البيانات.";
             msg.className = "auth-message error";
@@ -2657,18 +2931,33 @@
           return;
         }
 
-        container.innerHTML = orders.map(ord => `
-          <div style="border-bottom:1px dashed var(--border);padding:8px 0;">
-            <div style="display:flex;justify-content:space-between;font-weight:bold;">
-              <span>طلب #${escapeHTML(ord.id || '')}</span>
-              <span style="color:var(--primary);">${formatPrice(ord.total_amount || 0)}</span>
+        container.innerHTML = orders.map((ord, idx) => {
+          const items = Array.isArray(ord.order_items) ? ord.order_items : [];
+          const itemsHTML = items.length > 0
+            ? items.map(it => `
+                <div style="display:flex;justify-content:space-between;color:#4b5563;font-size:12px;margin-top:4px;padding-right:10px;border-right:2px solid var(--primary);">
+                  <span>${escapeHTML(it.product_name || 'منتج')} (x${it.quantity || 1})</span>
+                  <span>${formatPrice((it.price || 0) * (it.quantity || 1))}</span>
+                </div>
+              `).join("")
+            : '<div style="color:var(--muted);font-size:11px;margin-top:2px;">لا توجد تفاصيل تفصيلية للعناصر</div>';
+
+          return `
+            <div style="border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:10px;background:#fafafa;">
+              <div style="display:flex;justify-content:space-between;font-weight:bold;align-items:center;">
+                <span>طلب #${escapeHTML(String(ord.id || idx + 1).slice(0, 8))}</span>
+                <span style="color:var(--primary);">${formatPrice(ord.total_amount || 0)}</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-top:4px;">
+                <span>الحالة: <strong style="color:var(--dark);">${escapeHTML(ord.status || 'قيد المعالجة')}</strong></span>
+                <span>${ord.created_at ? new Date(ord.created_at).toLocaleDateString('ar-SY') : ''}</span>
+              </div>
+              <div style="margin-top:8px;padding-top:6px;border-top:1px dashed var(--border);">
+                ${itemsHTML}
+              </div>
             </div>
-            <div style="display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-top:2px;">
-              <span>الحالة: ${escapeHTML(ord.status || 'قيد المعالجة')}</span>
-              <span>${ord.created_at ? new Date(ord.created_at).toLocaleDateString('ar-SY') : ''}</span>
-            </div>
-          </div>
-        `).join("");
+          `;
+        }).join("");
       } catch (e) {
         console.warn("loadUserOrdersInModal error:", e);
         container.innerHTML = `<p style="color:var(--danger);text-align:center;">تعذر تحميل الطلبات.</p>`;
@@ -2696,20 +2985,24 @@
           .textContent =
           user.email || "";
 
-        document.getElementById("accountName")
-          .textContent =
-          user.user_metadata?.full_name ||
-          "المستخدم";
+        let displayName = user.user_metadata?.full_name || "المستخدم";
 
         if (typeof getUserProfile === "function") {
           const profile = await getUserProfile();
           if (profile) {
+            if (profile.full_name) {
+              displayName = profile.full_name;
+            }
+            const pName = document.getElementById("profileFullName");
             const pPhone = document.getElementById("profilePhone");
             const pCity = document.getElementById("profileCity");
+            if (pName) pName.value = profile.full_name || user.user_metadata?.full_name || "";
             if (pPhone) pPhone.value = profile.phone || "";
             if (pCity) pCity.value = profile.city || "";
           }
         }
+
+        document.getElementById("accountName").textContent = displayName;
 
         loadUserOrdersInModal();
 
@@ -2808,6 +3101,17 @@
 
       document.getElementById("checkoutMessage")
         .className = "auth-message";
+
+      if (typeof getUserProfile === "function") {
+        const profile = await getUserProfile();
+        const nameInput = document.getElementById("checkoutName");
+        const phoneInput = document.getElementById("checkoutPhone");
+        const cityInput = document.getElementById("checkoutCity");
+
+        if (nameInput) nameInput.value = profile?.full_name || user.user_metadata?.full_name || "";
+        if (phoneInput) phoneInput.value = profile?.phone || "";
+        if (cityInput) cityInput.value = profile?.city || "";
+      }
 
       openModal("checkoutModal");
     }
@@ -3042,7 +3346,63 @@
     function toggleAddProductForm() {
       const form = document.getElementById("sellerAddProductForm");
       if (form) {
-        form.style.display = form.style.display === "none" ? "block" : "none";
+        if (form.style.display === "none") {
+          // Reset form to add mode
+          document.getElementById("editProdId").value = "";
+          document.getElementById("sellerFormTitle").textContent = "إضافة منتج جديد";
+          document.getElementById("sellerSubmitProdBtn").textContent = "نشر المنتج";
+          document.getElementById("newProdName").value = "";
+          document.getElementById("newProdPrice").value = "";
+          document.getElementById("newProdStock").value = "10";
+          document.getElementById("newProdDesc").value = "";
+          document.getElementById("newProdImage").value = "";
+          document.getElementById("sellerAddProdMsg").textContent = "";
+          form.style.display = "block";
+        } else {
+          form.style.display = "none";
+        }
+      }
+    }
+
+
+    function editSellerProductUI(productId) {
+      const product = allProducts.find(p => String(p.id) === String(productId));
+      if (!product) return;
+
+      const form = document.getElementById("sellerAddProductForm");
+      if (form) {
+        document.getElementById("editProdId").value = product.id;
+        document.getElementById("sellerFormTitle").textContent = "تعديل المنتج";
+        document.getElementById("sellerSubmitProdBtn").textContent = "حفظ التعديلات";
+        document.getElementById("newProdName").value = product.name;
+        document.getElementById("newProdPrice").value = product.price;
+        document.getElementById("newProdStock").value = product.stock !== undefined ? product.stock : 10;
+        document.getElementById("newProdDesc").value = product.description || "";
+        document.getElementById("newProdImage").value = product.image || "";
+        if (product.category_id) {
+          document.getElementById("newProdCategory").value = product.category_id;
+        }
+        document.getElementById("sellerAddProdMsg").textContent = "";
+        form.style.display = "block";
+      }
+    }
+
+
+    async function toggleProductActiveStatus(productId, currentActive) {
+      if (typeof updateSellerProduct === "function") {
+        const res = await updateSellerProduct(productId, { is_active: !currentActive });
+        if (res.success) {
+          showToast(!currentActive ? "تم تفعيل المنتج ✅" : "تم إيقاف عرض المنتج ⏸️");
+          const prod = allProducts.find(p => String(p.id) === String(productId));
+          if (prod) {
+            prod.is_active = !currentActive;
+          }
+          displayedProducts = allProducts.filter(p => p.is_active);
+          renderProducts();
+          openSellerInfo(null);
+        } else {
+          showToast(res.error || "تعذر تغيير حالة المنتج.");
+        }
       }
     }
 
@@ -3088,8 +3448,11 @@
 
 
     async function submitSellerAddProduct() {
+      const editId = document.getElementById("editProdId")?.value;
       const name = document.getElementById("newProdName")?.value.trim();
       const price = document.getElementById("newProdPrice")?.value;
+      const stock = document.getElementById("newProdStock")?.value;
+      const desc = document.getElementById("newProdDesc")?.value.trim();
       const categoryId = document.getElementById("newProdCategory")?.value;
       const imageUrl = document.getElementById("newProdImage")?.value.trim();
       const msg = document.getElementById("sellerAddProdMsg");
@@ -3103,7 +3466,7 @@
       }
 
       if (msg) {
-        msg.textContent = "جاري نشر المنتج...";
+        msg.textContent = editId ? "جاري حفظ التعديلات..." : "جاري نشر المنتج...";
         msg.className = "auth-message";
       }
 
@@ -3117,51 +3480,91 @@
         }
       }
 
-      if (typeof addSellerProduct === "function") {
-        const res = await addSellerProduct({
-          name,
-          price: Number(price),
-          categoryId: categoryId || null,
-          sellerId: sellerId,
-          imageUrl
-        });
-
-        if (res.success) {
-          if (msg) {
-            msg.textContent = "تمت إضافة المنتج بنجاح! 🛍️";
-            msg.className = "auth-message success";
+      if (editId) {
+        // Edit flow
+        if (typeof updateSellerProduct === "function") {
+          const updates = {
+            name,
+            price: Number(price),
+            stock: stock !== "" && stock !== undefined ? Number(stock) : 10,
+            description: desc || "",
+            image_url: imageUrl || "",
+            category_id: categoryId || null
+          };
+          const res = await updateSellerProduct(editId, updates);
+          if (res.success) {
+            if (msg) {
+              msg.textContent = "تم تعديل المنتج بنجاح! ✅";
+              msg.className = "auth-message success";
+            }
+            const returnedData = Array.isArray(res.data) ? res.data[0] : res.data;
+            const updatedProd = returnedData ? normalizeProduct(returnedData) : null;
+            if (updatedProd) {
+              const idx = allProducts.findIndex(p => String(p.id) === String(editId));
+              if (idx !== -1) {
+                allProducts[idx] = updatedProd;
+              }
+            }
+            displayedProducts = allProducts.filter(p => p.is_active);
+            renderProducts();
+            setTimeout(() => {
+              toggleAddProductForm();
+              openSellerInfo(null);
+            }, 1200);
+          } else {
+            if (msg) {
+              msg.textContent = res.error || "فشل تعديل المنتج.";
+              msg.className = "auth-message error";
+            }
           }
+        }
+      } else {
+        // Create flow
+        if (typeof addSellerProduct === "function") {
+          const res = await addSellerProduct({
+            name,
+            price: Number(price),
+            stock: stock !== "" && stock !== undefined ? Number(stock) : 10,
+            description: desc || "",
+            categoryId: categoryId || null,
+            sellerId: sellerId,
+            imageUrl
+          });
 
-          // Append locally
-          const returnedData = Array.isArray(res.data) ? res.data[0] : res.data;
-          const newProd = returnedData
-            ? normalizeProduct(returnedData)
-            : normalizeProduct({
-                id: 'seller-' + Date.now(),
-                name,
-                price: Number(price),
-                seller_id: sellerId,
-                category_id: categoryId,
-                image_url: imageUrl
-              });
+          if (res.success) {
+            if (msg) {
+              msg.textContent = "تمت إضافة المنتج بنجاح! 🛍️";
+              msg.className = "auth-message success";
+            }
 
-          allProducts.unshift(newProd);
-          displayedProducts = [...allProducts];
-          renderProducts();
+            const returnedData = Array.isArray(res.data) ? res.data[0] : res.data;
+            const newProd = returnedData
+              ? normalizeProduct(returnedData)
+              : normalizeProduct({
+                  id: 'seller-' + Date.now(),
+                  name,
+                  price: Number(price),
+                  stock: Number(stock || 10),
+                  description: desc,
+                  seller_id: sellerId,
+                  category_id: categoryId,
+                  image_url: imageUrl
+                });
 
-          document.getElementById("newProdName").value = "";
-          document.getElementById("newProdPrice").value = "";
-          document.getElementById("newProdImage").value = "";
+            allProducts.unshift(newProd);
+            displayedProducts = allProducts.filter(p => p.is_active);
+            renderProducts();
 
-          setTimeout(() => {
-            toggleAddProductForm();
-            if (msg) msg.textContent = "";
-          }, 1500);
+            setTimeout(() => {
+              toggleAddProductForm();
+              openSellerInfo(null);
+            }, 1200);
 
-        } else {
-          if (msg) {
-            msg.textContent = res.error || "فشل نشر المنتج.";
-            msg.className = "auth-message error";
+          } else {
+            if (msg) {
+              msg.textContent = res.error || "فشل نشر المنتج.";
+              msg.className = "auth-message error";
+            }
           }
         }
       }
@@ -3198,20 +3601,25 @@
         const storeTitle = document.getElementById("sellerDashboardStoreName");
         if (storeTitle) storeTitle.textContent = myStore.store_name || "متجري";
 
-        // Filter products for this seller using seller_id or store_name
         const prodList = document.getElementById("sellerProductsList");
         if (prodList) {
-          const myProds = allProducts.filter(p => p.seller_id === myStore.id || p.seller === myStore.store_name);
+          const myProds = allProducts.filter(p => p.seller_id === myStore.id);
           if (myProds.length === 0) {
             prodList.innerHTML = `<p style="color:var(--muted);text-align:center;padding:10px;">لا توجد منتجات مسجلة باسم متجرك بعد.</p>`;
           } else {
             prodList.innerHTML = myProds.map(p => `
-              <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding:8px 0;">
+              <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding:10px 0;">
                 <div>
                   <strong>${escapeHTML(p.name)}</strong>
-                  <div style="font-size:12px;color:var(--muted);">${escapeHTML(p.category)}</div>
+                  <div style="font-size:12px;color:var(--muted);">${escapeHTML(p.category)} | المخزون: ${p.stock}</div>
                 </div>
-                <div style="color:var(--primary);font-weight:bold;">${formatPrice(p.price)}</div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="color:var(--primary);font-weight:bold;font-size:13px;">${formatPrice(p.price)}</span>
+                  <button class="add-btn" style="background:#f59e0b;padding:4px 8px;font-size:11px;" onclick="editSellerProductUI('${escapeHTML(p.id)}')">✏️ تعديل</button>
+                  <button class="add-btn" style="background:${p.is_active ? 'var(--danger)' : '#16a34a'};padding:4px 8px;font-size:11px;" onclick="toggleProductActiveStatus('${escapeHTML(p.id)}', ${p.is_active})">
+                    ${p.is_active ? 'إيقاف ⏸️' : 'تفعيل ▶️'}
+                  </button>
+                </div>
               </div>
             `).join("");
           }
@@ -3241,6 +3649,8 @@
         await loadProducts();
 
         await updateUserStatus();
+
+        checkUrlAuthTokens();
 
         const searchInput =
           document.getElementById("searchInput");

@@ -30,8 +30,38 @@ try {
 
 
 // ============================================
-// AUTHENTICATION SERVICES
+// AUTHENTICATION SERVICES & ARABIC ERROR MAPPER
 // ============================================
+
+/**
+ * Translate Supabase Auth errors into clear, friendly Arabic messages
+ */
+function translateAuthError(message) {
+  if (!message) return "حدث خطأ غير متوقع. يرجى المحاولة لاحقاً.";
+  const msg = String(message).toLowerCase();
+
+  if (msg.includes("rate limit") || msg.includes("email rate limit exceeded")) {
+    return "تم تجاوز حد إرسال الرسائل المؤقت في الخدمة. يرجى الانتظار بضع دقائق ثم المحاولة مجدداً.";
+  }
+  if (msg.includes("invalid login credentials") || msg.includes("invalid credentials")) {
+    return "البريد الإلكتروني أو كلمة المرور غير صحيحة.";
+  }
+  if (msg.includes("user already registered") || msg.includes("already registered") || msg.includes("user_already_exists")) {
+    return "البريد الإلكتروني مسجل بالفعل. يمكنك تسجيل الدخول مباشرة.";
+  }
+  if (msg.includes("password should be at least")) {
+    return "كلمة المرور يجب أن تتكون من 6 أحرف أو أرقام على الأقل.";
+  }
+  if (msg.includes("email not confirmed")) {
+    return "لم يتم تأكيد البريد الإلكتروني بعد. يرجى التحقق من رسائل البريد الواردة.";
+  }
+  if (msg.includes("unable to validate email address") || msg.includes("invalid email")) {
+    return "صيغة البريد الإلكتروني غير صحيحة.";
+  }
+
+  return message;
+}
+
 
 /**
  * Register a new user account and initialize profile
@@ -51,7 +81,8 @@ async function signUp(email, password, fullName = "") {
       options: {
         data: {
           full_name: fullName
-        }
+        },
+        emailRedirectTo: window.location.origin + window.location.pathname
       }
     });
 
@@ -59,7 +90,7 @@ async function signUp(email, password, fullName = "") {
       console.error("Sign up error:", error.message);
       return {
         success: false,
-        error: error.message
+        error: translateAuthError(error.message)
       };
     }
 
@@ -89,7 +120,7 @@ async function signUp(email, password, fullName = "") {
     console.error("Sign up exception:", error);
     return {
       success: false,
-      error: error.message || "حدث خطأ أثناء إنشاء الحساب."
+      error: translateAuthError(error.message)
     };
   }
 }
@@ -116,7 +147,7 @@ async function signIn(email, password) {
       console.error("Login error:", error.message);
       return {
         success: false,
-        error: error.message
+        error: translateAuthError(error.message)
       };
     }
 
@@ -128,7 +159,79 @@ async function signIn(email, password) {
     console.error("Login exception:", error);
     return {
       success: false,
-      error: error.message || "حدث خطأ أثناء تسجيل الدخول."
+      error: translateAuthError(error.message)
+    };
+  }
+}
+
+
+/**
+ * Send password reset email
+ */
+async function resetPasswordForEmail(email) {
+  if (!supabaseClient) {
+    return {
+      success: false,
+      error: "الاتصال بقاعدة البيانات غير متاح."
+    };
+  }
+
+  try {
+    const { data, error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + window.location.pathname
+    });
+
+    if (error) {
+      return {
+        success: false,
+        error: translateAuthError(error.message)
+      };
+    }
+
+    return {
+      success: true,
+      data: data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: translateAuthError(error.message)
+    };
+  }
+}
+
+
+/**
+ * Update user password (used during password recovery flow)
+ */
+async function updateUserPassword(newPassword) {
+  if (!supabaseClient) {
+    return {
+      success: false,
+      error: "الاتصال بقاعدة البيانات غير متاح."
+    };
+  }
+
+  try {
+    const { data, error } = await supabaseClient.auth.updateUser({
+      password: newPassword
+    });
+
+    if (error) {
+      return {
+        success: false,
+        error: translateAuthError(error.message)
+      };
+    }
+
+    return {
+      success: true,
+      data: data
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: translateAuthError(error.message)
     };
   }
 }
@@ -372,12 +475,14 @@ async function createOrderInSupabase(checkoutData, cartItems) {
     const orderId = createdOrder ? createdOrder.id : null;
 
     if (orderId && cartItems && cartItems.length > 0) {
+      const isUUID = (str) => typeof str === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
       const itemsPayload = cartItems.map(item => ({
         order_id: orderId,
-        product_id: item.id,
+        product_id: isUUID(item.id) ? item.id : null,
         product_name: item.name,
-        price: item.price,
-        quantity: item.quantity
+        price: Number(item.price) || 0,
+        quantity: Number(item.quantity) || 1
       }));
 
       const { error: itemsError } = await supabaseClient
@@ -386,7 +491,7 @@ async function createOrderInSupabase(checkoutData, cartItems) {
 
       if (itemsError) {
         console.error("Order items save error:", itemsError.message);
-        return { success: false, error: itemsError.message || "فشل حفظ تفاصيل عناصر الطلب" };
+        return { success: false, error: "تعذر حفظ تفاصيل عناصر الطلب: " + (itemsError.message || "خطأ أثناء حفظ المنتجات") };
       }
     }
 
@@ -508,6 +613,7 @@ async function addSellerProduct(productData) {
       price: productData.price,
       description: productData.description || "",
       image_url: productData.imageUrl || "",
+      stock: productData.stock !== undefined ? Number(productData.stock) : 10,
       is_active: true,
       seller_id: sellerId,
       category_id: productData.categoryId || productData.category_id || null
@@ -524,6 +630,41 @@ async function addSellerProduct(productData) {
   } catch (error) {
     console.error("addSellerProduct error:", error);
     return { success: false, error: error.message || "فشل إضافة المنتج." };
+  }
+}
+
+
+/**
+ * Update an existing product as a seller
+ */
+async function updateSellerProduct(productId, updates) {
+  if (!supabaseClient) {
+    return { success: false, error: "الاتصال بقاعدة البيانات غير متاح." };
+  }
+
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return { success: false, error: "يرجى تسجيل الدخول كبائع." };
+    }
+
+    const payload = {
+      ...updates,
+      updated_at: new Date().toISOString()
+    };
+
+    const { data, error } = await supabaseClient
+      .from("products")
+      .update(payload)
+      .eq("id", productId)
+      .select("*, sellers(*), categories(*)");
+
+    if (error) throw error;
+
+    return { success: true, data };
+  } catch (error) {
+    console.error("updateSellerProduct error:", error);
+    return { success: false, error: error.message || "فشل تحديث المنتج." };
   }
 }
 
