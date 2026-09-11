@@ -41,22 +41,22 @@ To unlock database-level persistence for advanced enterprise features in future 
 | **2. Seller Portal & Dashboard** | `LIVE` | Store registration, product creation, stock updates, active/deactivate toggles, seller ownership checks (`user_id` -> `sellers.id`), store analytics, and bulk CSV product import. |
 | **3. Customer Marketplace & UX** | `LIVE` | Home page, categories, mobile bottom navigation bar, dynamic search, price/stock filters, product detail modals, and seller profiles. |
 | **4. Product System** | `LIVE` | Fully supports Supabase fields with active status controls, stock badges ("متوفر", "كمية محدودة", "نفدت الكمية"), and custom note inputs. |
-| **5. Product Reviews & Ratings** | `LIVE` | Rating system architecture with verified purchase checking against customer order history. |
+| **5. Product Reviews & Ratings** | `REQUIRED SCHEMA CHANGES` | UI architecture ready; persistent review records require creating a `reviews` table in Supabase. |
 | **6. Seller Trust System** | `LIVE` | Verified seller badges, store completion badges, and rating indicators. |
 | **7. Seller Verification** | `READY FOR CONFIGURATION` | Verification status indicators (Pending / Approved / Rejected). |
 | **8. Advanced Wishlists** | `LIVE` | Add/remove items, share wishlist link, move items to cart, persisted in LocalStorage (`syriaMarketWishlists`). |
 | **9. Product Comparison** | `LIVE` | Compare products side-by-side on price, category, stock, and seller. |
-| **10. AI Shopping Assistant** | `LIVE` | Syrian dialect natural language query parser ("بدي موبايل للتصوير والألعاب وبحدود 4 ملايين ليرة") recommending matched products with budget detection. |
-| **11. "Request a Product" (اطلب منتجاً)** | `LIVE` | Submit custom product requests with budget, desired quantity, and city location. |
-| **12. RFQ / Wholesale Requests** | `LIVE` | B2B request for quote interface for bulk purchasing. |
-| **13. Price Negotiation** | `LIVE` | Custom buyer offer submission for seller approval without client-side price manipulation. |
-| **14. Bulk Orders & Custom Products** | `LIVE` | Tiered pricing display & customization text inputs at checkout. |
-| **15. Multi-Seller Cart** | `LIVE` | Unified customer cart calculating sub-totals grouped by individual sellers. |
-| **16. Order Management** | `LIVE` | Full order lifecycle (`pending`, `confirmed`, `processing`, `shipped`, `delivered`, `cancelled`) with transactional rollback safety. |
-| **17. Buy Again & Quick Buy** | `LIVE` | One-click re-order from order history and direct "اشتر الآن" checkout. |
-| **18. Shipping System** | `LIVE` | Governorate delivery address tracking, city selection, and delivery fee calculation. |
-| **19. Returns & Dispute System** | `LIVE` | Buyer protection dispute filing and return request workflows. |
-| **20. Coupons & Discount Codes** | `LIVE` | Live coupon validator (`SYRIA10`, `WELCOME`, `MARKET2026`) applying percentage and fixed discounts during checkout. |
+| **10. AI Shopping Assistant** | `LIVE` | Syrian dialect rule-based parser ("بدي موبايل للتصوير والألعاب وبحدود 4 ملايين ليرة") filtering active marketplace products; LLM API key required for full generative responses. |
+| **11. "Request a Product" (اطلب منتجاً)** | `REQUIRED SCHEMA CHANGES` | Form UI ready; saving submitted custom product requests requires adding a `product_requests` table in Supabase. |
+| **12. RFQ / Wholesale Requests** | `REQUIRED SCHEMA CHANGES` | B2B quote request UI ready; backend storage requires adding an `rfq_requests` table. |
+| **13. Price Negotiation** | `REQUIRED SCHEMA CHANGES` | Offer UI ready; saving counter-offers requires adding an `order_offers` table. |
+| **14. Bulk Orders & Custom Products** | `LIVE` | Customization instructions input at checkout. Tiered bulk pricing requires adding `bulk_pricing` table for persistence. |
+| **15. Multi-Seller Cart** | `LIVE` | Unified customer cart showing seller sub-total breakdown before checkout. |
+| **16. Order Management** | `LIVE` | Full order lifecycle (`pending`, `confirmed`, `processing`, `shipped`, `delivered`, `cancelled`) linked to Supabase `orders` and `order_items`. |
+| **17. Buy Again & Quick Buy** | `LIVE` | One-click re-order from order history and direct checkout. |
+| **18. Shipping System** | `LIVE` | Governorate delivery address tracking and city selection. |
+| **19. Returns & Dispute System** | `REQUIRED SCHEMA CHANGES` | Dispute UI workflow ready; persisting return requests requires adding a `disputes` table. |
+| **20. Coupons & Discount Codes** | `LIVE` | Client-side coupon validator (`SYRIA10`, `WELCOME`, `MARKET2026`) applying percentage and fixed discounts during checkout. DB persistence requires adding a `coupons` table. |
 | **21. Payment Gateways**: | | |
 | - *Cash on Delivery (الدفع عند الاستلام)* | `LIVE` | Fully functional primary Syrian payment method. |
 | - *Bank Transfer (حوالة بنكية)* | `LIVE` | Manual verification transfer notice for Syrian Commercial Bank & Bank Bemo. |

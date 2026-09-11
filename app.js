@@ -670,7 +670,8 @@ async function addSellerProduct(productData) {
 // ============================================
 
 /**
- * Syrian Arabic AI Shopping Assistant query parser and product recommender
+ * Rule-Based Syrian Arabic Query Parser & Product Recommender (AI-Ready Architecture)
+ * Parses budget and Syrian dialect keywords on client side before backend AI model integration.
  */
 function parseAIShoppingAssistantQuery(userPrompt, productsList = []) {
   if (!userPrompt || typeof userPrompt !== "string") {
@@ -779,11 +780,11 @@ function getPaymentProvidersStatus() {
     },
     {
       id: "bank_transfer",
-      name: "حوالة بنكية / المصرف التجاري",
+      name: "حوالة بنكية معتمدة (Bank Transfer)",
       icon: "🏦",
       enabled: true,
-      description: "تحويل لمصرف بيمو أو المصرف التجاري السوري مع إرفاق إشعار التحويل",
-      statusText: "مفعّل (تحقق يدوي) 🔵"
+      description: "تحويل بنكي مباشر إلى الحساب المعتمد للمنصة/المتجر مع إرفاق إشعار التحويل",
+      statusText: "مفعّل (تحقق يدوياً) 🔵"
     },
     {
       id: "ecash",
@@ -805,7 +806,8 @@ function getPaymentProvidersStatus() {
 }
 
 /**
- * Coupon Validator
+ * Client-Side Demo Coupon Preview Validator
+ * Note: Real production applications must validate coupon discounts server-side before finalizing charges.
  */
 function validateCouponCode(code, totalAmount) {
   if (!code || typeof code !== "string") return { valid: false, error: "رمز الكوبون غير صحيح." };
@@ -849,7 +851,8 @@ function validateCouponCode(code, totalAmount) {
 // ============================================
 
 /**
- * Check if the currently logged in user has admin role
+ * Check if the currently logged in user has admin role for UI rendering.
+ * Note: This check only controls UI visibility. Authoritative security relies on Supabase RLS policies.
  */
 async function isUserAdmin() {
   const profile = await getUserProfile();
@@ -1005,7 +1008,7 @@ async function deleteCategoryByAdmin(categoryId) {
 }
 
 /**
- * Fetch seller performance analytics
+ * Fetch seller performance analytics strictly filtering by authenticated seller_id
  */
 async function fetchSellerAnalytics() {
   const user = await getCurrentUser();
@@ -1017,16 +1020,21 @@ async function fetchSellerAnalytics() {
 
     if (!myStore) return null;
 
-    const products = await fetchProductsFromSupabase();
-    const myProducts = Array.isArray(products)
-      ? products.filter(p => String(p.seller_id) === String(myStore.id) || p.sellers?.store_name === myStore.store_name)
-      : [];
+    // Fetch products strictly matching authenticated store ID
+    const { data: myProductsData, error } = await supabaseClient
+      .from("products")
+      .select("*")
+      .eq("seller_id", myStore.id);
 
+    if (error) throw error;
+
+    const myProducts = myProductsData || [];
     const totalProducts = myProducts.length;
     const activeProducts = myProducts.filter(p => p.is_active !== false).length;
     const lowStockProducts = myProducts.filter(p => Number(p.stock) <= 3);
 
     return {
+      storeId: myStore.id,
       storeName: myStore.store_name,
       totalProducts,
       activeProducts,

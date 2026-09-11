@@ -1080,7 +1080,7 @@
         <a href="#" onclick="goHome(event)">الرئيسية</a>
         <a href="#productsSection">المنتجات</a>
         <a href="#categoriesSection">التصنيفات</a>
-        <a href="#" onclick="openAIAssistantModal(); return false;" style="color:var(--primary);font-weight:bold;">🤖 مساعد الذكاء الاصطناعي</a>
+        <a href="#" onclick="openAIAssistantModal(); return false;" style="color:var(--primary);font-weight:bold;">🤖 مساعد البحث (AI-Ready)</a>
         <a href="#" onclick="openWishlistModal(); return false;">❤️ المفضلة</a>
         <a href="#" onclick="openRequestProductModal(); return false;">💡 اطلب منتجاً</a>
         <a href="#" onclick="openSellerInfo(event)">كن بائعاً</a>
@@ -1477,7 +1477,7 @@
 
         <!-- Bulk CSV Import Section -->
         <div id="sellerCSVImportForm" style="display:none;background:#f0fdf4;padding:15px;border-radius:12px;margin-bottom:20px;border:1px solid #bbf7d0;">
-          <h4 style="margin-bottom:8px;font-size:15px;color:#166534;">استيراد منتجات جماعي من ملف CSV 📄</h4>
+          <h4 style="margin-bottom:8px;font-size:15px;color:#166534;">استيراد منتجات تبسيطي من نص CSV 📄</h4>
           <p style="font-size:12px;color:#15803d;margin-bottom:10px;">الصيغة المطلوبة: name, price, stock, description</p>
           <div class="form-group">
             <textarea class="form-control" id="sellerCSVInput" placeholder="name,price,stock,description&#10;هاتف ذكي,2500000,10,مواصفات ممتازة&#10;سماعات,180000,15,صوت نقي" style="height:90px;font-family:monospace;font-size:12px;"></textarea>
@@ -1825,8 +1825,8 @@
       <button class="modal-close" onclick="closeModal('aiAssistantModal')">×</button>
 
       <div class="modal-title">
-        <h2>مساعد التسوق الذكي 🤖</h2>
-        <p>اكتب طلبك باللغة الطبيعية ليرشح لك أفضل المنتجات بالسوق السوري</p>
+        <h2>مساعد البحث والترشيح (Rule-based / AI-Ready) 🤖</h2>
+        <p>اكتب طلبك باللغة الطبيعية ليرشح لك أوتوماتيكياً أفضل المنتجات المطابقة بالسوق السوري</p>
       </div>
 
       <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:12px;border-radius:12px;margin-bottom:15px;font-size:12px;color:#166534;">
@@ -3412,31 +3412,37 @@
       if (!select || !notice) return;
 
       const val = select.value;
+      let providers = [];
+      if (typeof getPaymentProvidersStatus === "function") {
+        providers = getPaymentProvidersStatus();
+      }
+      const provider = providers.find(p => p.id === val);
+
       if (val === "cod") {
         notice.style.background = "#f0fdf4";
         notice.style.color = "#166534";
         notice.style.borderColor = "#bbf7d0";
-        notice.textContent = "الدفع عند الاستلام مفعّل رسمياً. سيتم إرسال الشحنة والتسليم نقداً 💵";
+        notice.textContent = provider ? provider.description : "الدفع عند الاستلام مفعّل رسمياً. سيتم إرسال الشحنة والتسليم نقداً 💵";
       } else if (val === "sham_cash") {
         notice.style.background = "#fff7ed";
         notice.style.color = "#9a3412";
         notice.style.borderColor = "#fed7aa";
-        notice.textContent = "⚠️ الدفع عبر شام كاش غير مفعّل حالياً - يتطلب إدخال مفاتيح بائع شام كاش المعتمدة في الإعدادات.";
+        notice.textContent = provider ? provider.description : "⚠️ الدفع عبر شام كاش غير مفعّل حالياً - يتطلب ضبط مفاتيح التاجر.";
       } else if (val === "bank_transfer") {
         notice.style.background = "#eff6ff";
         notice.style.color = "#1e40af";
         notice.style.borderColor = "#bfdbfe";
-        notice.textContent = "🏦 التحويل البنكي مفعّل - يمكنك التحويل لحساب المصرف التجاري السوري أو بيمو وإرفاق الرقم المرجعي في الملاحظات.";
+        notice.textContent = provider ? provider.description : "🏦 التحويل البنكي مفعّل - يرجي تحويل المبلغ للبنك المحدد مع كتابة الرقم المرجعي.";
       } else if (val === "ecash") {
         notice.style.background = "#fff7ed";
         notice.style.color = "#9a3412";
         notice.style.borderColor = "#fed7aa";
-        notice.textContent = "⚠️ بوابة إي كاش الوطنية غير مفعّلة حالياً - تتطلب مفاتيح مزود الخدمة.";
+        notice.textContent = provider ? provider.description : "⚠️ بوابة إي كاش الوطنية غير مفعّلة حالياً.";
       } else if (val === "card") {
         notice.style.background = "#fef2f2";
         notice.style.color = "#991b1b";
         notice.style.borderColor = "#fecaca";
-        notice.textContent = "⚠️ الدفع بالبطاقات الدولية غير مفعّل حالياً.";
+        notice.textContent = provider ? provider.description : "⚠️ الدفع بالبطاقات الدولية غير مفعّل حالياً.";
       }
     }
 
@@ -3484,7 +3490,7 @@
 
       const sellers = Object.keys(grouped);
       container.innerHTML = `
-        <div style="font-weight:bold;margin-bottom:6px;color:var(--dark);">تفاصيل الشراء حسب المتجر (${sellers.length} متجر):</div>
+        <div style="font-weight:bold;margin-bottom:6px;color:var(--dark);">تقسيم عناصر الشراء حسب البائع (عرض السلة) - ${sellers.length} متجر:</div>
         ${sellers.map(s => {
           const items = grouped[s];
           const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
@@ -4009,15 +4015,9 @@
       }
 
       if (msg) {
-        msg.textContent = "تم إرسال طلبك بنجاح للمتاجر! سنتواصل معك عند توفر العروض. 💡";
-        msg.className = "auth-message success";
+        msg.textContent = "⚠️ خدمة طلب منتج غير متوفر تتطلب إضافة جدول 'product_requests' في قاعدة البيانات لحفظ الطلبات وتنبيه المتاجر.";
+        msg.className = "auth-message error";
       }
-
-      setTimeout(() => {
-        closeModal("requestProductModal");
-        if (msg) msg.textContent = "";
-        showToast("تم إرسال طلبك المخصص بنجاح 💡");
-      }, 1500);
     }
 
     /* =====================================================
