@@ -807,27 +807,26 @@ function getPaymentProvidersStatus() {
 
 /**
  * Client-Side Demo Coupon Preview Validator
- * Note: Real production applications must validate coupon discounts server-side before finalizing charges.
+ * Note: This is a frontend UI preview only. Production order charges must verify coupons server-side.
  */
 function validateCouponCode(code, totalAmount) {
-  if (!code || typeof code !== "string") return { valid: false, error: "رمز الكوبون غير صحيح." };
+  if (!code || typeof code !== "string") return { valid: false, error: "رمز الكوبون غير مدخل." };
   const cleanCode = code.trim().toUpperCase();
 
-  const COUPONS = {
-    "SYRIA10": { type: "percent", value: 10, minOrder: 50000, desc: "خصم 10% على جميع الطلبات فوق 50,000 ل.س" },
-    "WELCOME": { type: "percent", value: 15, minOrder: 100000, desc: "خصم 15% للطلب الأول فوق 100,000 ل.س" },
-    "MARKET2026": { type: "fixed", value: 25000, minOrder: 200000, desc: "خصم بقيمة 25,000 ل.س للطلبات الكبيرة" }
+  const DEMO_COUPONS = {
+    "SYRIA10": { type: "percent", value: 10, minOrder: 50000, desc: "[معاينة واجهة] خصم 10%" },
+    "WELCOME": { type: "percent", value: 15, minOrder: 100000, desc: "[معاينة واجهة] خصم 15%" }
   };
 
-  const coupon = COUPONS[cleanCode];
+  const coupon = DEMO_COUPONS[cleanCode];
   if (!coupon) {
-    return { valid: false, error: "رمز الكوبون غير موجود أو منتهي الصلاحية." };
+    return { valid: false, error: "معاينة واجهة: رمز الكوبون غير مسجل بالمعاينة." };
   }
 
   if (totalAmount < coupon.minOrder) {
     return {
       valid: false,
-      error: `هذا الكوبون يتطلب حداً أدنى للطلب بقيمة ${new Intl.NumberFormat("ar-SY").format(coupon.minOrder)} ل.س.`
+      error: `[معاينة] الحد الأدنى للاستفادة هو ${new Intl.NumberFormat("ar-SY").format(coupon.minOrder)} ل.س.`
     };
   }
 
@@ -841,8 +840,9 @@ function validateCouponCode(code, totalAmount) {
   return {
     valid: true,
     code: cleanCode,
+    isClientPreviewOnly: true,
     discountAmount: Math.min(discountAmount, totalAmount),
-    desc: coupon.desc
+    desc: coupon.desc + " (معاينة واجهة العميل فقط - غير مؤكد للخصم النهائي بدون تحقق بالخلفية)"
   };
 }
 
@@ -1048,36 +1048,87 @@ async function fetchSellerAnalytics() {
 }
 
 /**
- * Validate CSV import string for product bulk creation
+ * RFC-4180 Compliant CSV Parser for product bulk creation.
+ * Supports quoted fields, escaped quotes (""), commas inside quotes, and multiline values.
  */
 function parseProductCSV(csvText) {
   if (!csvText || typeof csvText !== "string") {
     return { success: false, error: "نص CSV فارغ أو غير صحيح." };
   }
 
-  const lines = csvText.split(/\r?\n/).filter(line => line.trim().length > 0);
-  if (lines.length < 2) {
-    return { success: false, error: "ملف CSV يجب أن يحتوي على سطر الترويسة وسطراً واحداً على الأقل من البيانات." };
+  function parseCSVRows(str) {
+    const rows = [];
+    let currentRow = [];
+    let currentField = '';
+    let insideQuotes = false;
+
+    for (let i = 0; i < str.length; i++) {
+      const char = str[i];
+      const nextChar = str[i + 1];
+
+      if (char === '"') {
+        if (insideQuotes && nextChar === '"') {
+          currentField += '"';
+          i++; // Skip escaped quote
+        } else {
+          insideQuotes = !insideQuotes;
+        }
+      } else if (char === ',' && !insideQuotes) {
+        currentRow.push(currentField.trim());
+        currentField = '';
+      } else if ((char === '\r' || char === '\n') && !insideQuotes) {
+        if (char === '\r' && nextChar === '\n') {
+          i++;
+        }
+        currentRow.push(currentField.trim());
+        if (currentRow.some(f => f !== '')) {
+          rows.push(currentRow);
+        }
+        currentRow = [];
+        currentField = '';
+      } else {
+        currentField += char;
+      }
+    }
+
+    if (currentField !== '' || currentRow.length > 0) {
+      currentRow.push(currentField.trim());
+      if (currentRow.some(f => f !== '')) {
+        rows.push(currentRow);
+      }
+    }
+
+    return rows;
   }
 
-  const headers = lines[0].split(",").map(h => h.trim().toLowerCase());
+  const rows = parseCSVRows(csvText);
+  if (rows.length === 0) {
+    return { success: false, error: "لا توجد أسطر بيانات لمعالجتها." };
+  }
+
+  let startIndex = 0;
+  const firstRowStr = rows[0].join(',').toLowerCase();
+  if (firstRowStr.includes("name") || firstRowStr.includes("اسم")) {
+    startIndex = 1;
+  }
+
   const parsedProducts = [];
+  for (let i = startIndex; i < rows.length; i++) {
+    const cols = rows[i];
+    if (cols.length >= 2) {
+      const name = cols[0];
+      const price = Number(cols[1].replace(/[^\d.-]/g, "")) || 0;
+      const stock = cols[2] ? Number(cols[2].replace(/[^\d.-]/g, "")) : 10;
+      const description = cols[3] || "";
 
-  for (let i = 1; i < lines.length; i++) {
-    const cols = lines[i].split(",").map(c => c.trim().replace(/^"(.*)"$/, "$1"));
-    if (cols.length < 2) continue;
+      if (name && !isNaN(price)) {
+        parsedProducts.push({ name, price, stock: isNaN(stock) ? 10 : stock, description });
+      }
+    }
+  }
 
-    const nameIndex = headers.indexOf("name") !== -1 ? headers.indexOf("name") : 0;
-    const priceIndex = headers.indexOf("price") !== -1 ? headers.indexOf("price") : 1;
-    const stockIndex = headers.indexOf("stock") !== -1 ? headers.indexOf("stock") : 2;
-    const descIndex = headers.indexOf("description") !== -1 ? headers.indexOf("description") : 3;
-
-    const name = cols[nameIndex] || `منتج مستورد ${i}`;
-    const price = Number(cols[priceIndex]) || 0;
-    const stock = Number(cols[stockIndex]) || 10;
-    const description = cols[descIndex] || "";
-
-    parsedProducts.push({ name, price, stock, description });
+  if (parsedProducts.length === 0) {
+    return { success: false, error: "لم يتم التعرف على أي منتجات صالحة في نص CSV." };
   }
 
   return { success: true, products: parsedProducts };
