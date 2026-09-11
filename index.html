@@ -814,6 +814,56 @@
     }
 
     /* =========================
+       MOBILE BOTTOM NAV
+    ========================== */
+
+    .mobile-bottom-nav {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: white;
+      border-top: 1px solid var(--border);
+      z-index: 2000;
+      justify-content: space-around;
+      align-items: center;
+      box-shadow: 0 -4px 15px rgba(0,0,0,.05);
+    }
+
+    .mobile-bottom-nav button {
+      border: 0;
+      background: transparent;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 11px;
+      color: var(--muted);
+      gap: 2px;
+      position: relative;
+    }
+
+    .mobile-bottom-nav button span.icon {
+      font-size: 20px;
+    }
+
+    .mobile-bottom-nav button.active {
+      color: var(--primary);
+      font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-bottom-nav {
+        display: flex;
+      }
+
+      body {
+        padding-bottom: 60px;
+      }
+    }
+
+    /* =========================
        MOBILE
     ========================== */
 
@@ -992,6 +1042,18 @@
 
         <button
           class="action"
+          title="لوحة التحكم"
+          id="adminNavBtn"
+          style="display:none;"
+          onclick="openAdminDashboard()"
+          aria-label="لوحة التحكم"
+        >
+          ⚙️
+          <span>الإدارة</span>
+        </button>
+
+        <button
+          class="action"
           title="الحساب"
           onclick="openAccount()"
           aria-label="الحساب"
@@ -1018,12 +1080,39 @@
         <a href="#" onclick="goHome(event)">الرئيسية</a>
         <a href="#productsSection">المنتجات</a>
         <a href="#categoriesSection">التصنيفات</a>
-        <a href="#featuresSection">لماذا Syria Market؟</a>
+        <a href="#" onclick="openAIAssistantModal(); return false;" style="color:var(--primary);font-weight:bold;">🤖 مساعد الذكاء الاصطناعي</a>
+        <a href="#" onclick="openWishlistModal(); return false;">❤️ المفضلة</a>
+        <a href="#" onclick="openRequestProductModal(); return false;">💡 اطلب منتجاً</a>
         <a href="#" onclick="openSellerInfo(event)">كن بائعاً</a>
         <a href="#" onclick="openContact(event)">تواصل معنا</a>
       </div>
     </nav>
   </header>
+
+  <!-- Mobile Bottom Navigation Bar -->
+  <div class="mobile-bottom-nav">
+    <button onclick="goHome(event)" class="active">
+      <span class="icon">🏠</span>
+      <span>الرئيسية</span>
+    </button>
+    <button onclick="openAIAssistantModal()">
+      <span class="icon">🤖</span>
+      <span>المساعد</span>
+    </button>
+
+    <button onclick="openWishlistModal()">
+      <span class="icon">❤️</span>
+      <span>المفضلة</span>
+    </button>
+    <button onclick="openCart()">
+      <span class="icon">🛒</span>
+      <span>السلة</span>
+    </button>
+    <button onclick="openAccount()">
+      <span class="icon">👤</span>
+      <span>حسابي</span>
+    </button>
+  </div>
 
 
   <!-- =========================
@@ -1219,6 +1308,7 @@
       <div class="footer-links">
         <h3>للبائعين</h3>
         <a href="#" onclick="openSellerInfo(event)">كن بائعاً</a>
+        <a href="#" onclick="openAdminDashboard(event)" id="adminFooterLink" style="display:none;color:#2dd4bf;">لوحة تحكم المشرف</a>
         <a href="#" onclick="openInfo('terms', event)">الشروط والأحكام</a>
       </div>
 
@@ -1379,7 +1469,21 @@
             <h3 id="sellerDashboardStoreName" style="color:var(--dark);font-size:18px;">متجري</h3>
             <span style="font-size:12px;color:var(--primary);font-weight:bold;">بائع معتمد 🟢</span>
           </div>
-          <button class="add-btn" onclick="toggleAddProductForm()">+ إضافة منتج جديد</button>
+          <div style="display:flex;gap:8px;">
+            <button class="secondary-btn" style="height:36px;margin:0;font-size:12px;" onclick="toggleSellerCSVImport()">📥 استيراد CSV</button>
+            <button class="add-btn" onclick="toggleAddProductForm()">+ إضافة منتج جديد</button>
+          </div>
+        </div>
+
+        <!-- Bulk CSV Import Section -->
+        <div id="sellerCSVImportForm" style="display:none;background:#f0fdf4;padding:15px;border-radius:12px;margin-bottom:20px;border:1px solid #bbf7d0;">
+          <h4 style="margin-bottom:8px;font-size:15px;color:#166534;">استيراد منتجات جماعي من ملف CSV 📄</h4>
+          <p style="font-size:12px;color:#15803d;margin-bottom:10px;">الصيغة المطلوبة: name, price, stock, description</p>
+          <div class="form-group">
+            <textarea class="form-control" id="sellerCSVInput" placeholder="name,price,stock,description&#10;هاتف ذكي,2500000,10,مواصفات ممتازة&#10;سماعات,180000,15,صوت نقي" style="height:90px;font-family:monospace;font-size:12px;"></textarea>
+          </div>
+          <button class="primary-btn" style="background:#16a34a;" onclick="submitSellerCSVImport()">معالجة واستيراد المنتجات</button>
+          <div id="sellerCSVMsg" class="auth-message"></div>
         </div>
 
         <!-- Add Product Form -->
@@ -1415,6 +1519,22 @@
           </div>
           <button class="primary-btn" onclick="submitSellerAddProduct()">نشر المنتج</button>
           <div id="sellerAddProdMsg" class="auth-message"></div>
+        </div>
+
+        <!-- Seller Overview Analytics -->
+        <div id="sellerAnalyticsBar" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:15px;text-align:center;">
+          <div style="background:#f1f5f9;padding:10px;border-radius:10px;">
+            <div style="font-size:11px;color:var(--muted);">إجمالي المنتجات</div>
+            <strong id="sellerStatTotalProd" style="font-size:16px;color:var(--dark);">0</strong>
+          </div>
+          <div style="background:#f1f5f9;padding:10px;border-radius:10px;">
+            <div style="font-size:11px;color:var(--muted);">النشطة بالمحل</div>
+            <strong id="sellerStatActiveProd" style="font-size:16px;color:var(--primary);">0</strong>
+          </div>
+          <div style="background:#f1f5f9;padding:10px;border-radius:10px;">
+            <div style="font-size:11px;color:var(--muted);">مخزون منخفض</div>
+            <strong id="sellerStatLowStock" style="font-size:16px;color:var(--danger);">0</strong>
+          </div>
         </div>
 
         <div>
@@ -1556,19 +1676,22 @@
 
   <div class="modal" id="checkoutModal">
 
-    <div class="modal-box">
+    <div class="modal-box modal-large" style="max-width:600px;">
 
       <button class="modal-close" onclick="closeModal('checkoutModal')">
         ×
       </button>
 
       <div class="modal-title">
-        <h2>إتمام الطلب</h2>
-        <p>أدخل معلومات التواصل والتوصيل</p>
+        <h2>إتمام الطلب 🛒</h2>
+        <p>أدخل معلومات التوصيل واختر طريقة الدفع المناسبة</p>
       </div>
 
+      <!-- Multi-Seller Cart Summary Breakdown -->
+      <div id="checkoutSellersBreakdown" style="background:#f8fafc;border:1px solid var(--border);padding:12px;border-radius:12px;margin-bottom:15px;font-size:12px;"></div>
+
       <div class="form-group">
-        <label for="checkoutName">الاسم</label>
+        <label for="checkoutName">الاسم الكامل</label>
         <input
           type="text"
           class="form-control"
@@ -1593,33 +1716,62 @@
           type="text"
           class="form-control"
           id="checkoutCity"
-          placeholder="مثال: حماة"
+          placeholder="مثال: دمشق، حلب، حماة..."
         >
       </div>
 
       <div class="form-group">
-        <label for="checkoutAddress">عنوان التوصيل</label>
+        <label for="checkoutAddress">عنوان التوصيل بالتفصيل</label>
         <textarea
           class="form-control"
           id="checkoutAddress"
-          placeholder="العنوان بالتفصيل"
+          placeholder="اسم الشارع، الحي، رقم البناء أو المعلم القريب"
         ></textarea>
       </div>
 
+      <!-- Payment Method Selection -->
       <div class="form-group">
-        <label for="checkoutNotes">ملاحظات إضافية</label>
+        <label for="checkoutPaymentMethod">طريقة الدفع 💳</label>
+        <select class="form-control" id="checkoutPaymentMethod" onchange="handlePaymentMethodChange()">
+          <option value="cod">💵 الدفع عند الاستلام (Cash on Delivery)</option>
+          <option value="sham_cash">💳 شام كاش (Sham Cash)</option>
+          <option value="bank_transfer">🏦 حوالة بنكية / المصرف التجاري</option>
+          <option value="ecash">📱 إي كاش (E-Cash)</option>
+          <option value="card">💳 بطاقة فيزا / ماستركارد</option>
+        </select>
+      </div>
+
+      <!-- Payment Provider Instructions Banner -->
+      <div id="paymentProviderNotice" style="font-size:12px;padding:10px;border-radius:8px;margin-bottom:15px;background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;">
+        الدفع عند الاستلام مفعّل رسمياً. سيتم تسليم المبلغ للشاعر عند وصول الشحنة.
+      </div>
+
+      <!-- Coupon Code Section -->
+      <div class="form-group" style="display:flex;gap:8px;">
+        <input type="text" class="form-control" id="checkoutCouponInput" placeholder="رمز الكوبون (مثال: SYRIA10)" style="flex:1;text-transform:uppercase;">
+        <button class="secondary-btn" style="width:auto;padding:0 15px;margin:0;height:45px;" onclick="applyCheckoutCoupon()">تطبيق</button>
+      </div>
+      <div id="checkoutCouponMsg" style="font-size:12px;margin-bottom:10px;"></div>
+
+      <div class="form-group">
+        <label for="checkoutNotes">ملاحظات إضافية (اختياري)</label>
         <textarea
           class="form-control"
           id="checkoutNotes"
-          placeholder="أي ملاحظات تخص الطلب"
+          placeholder="أي تعليمات أو ملاحظات للموزع"
         ></textarea>
+      </div>
+
+      <div style="border-top:1px solid var(--border);padding-top:12px;margin-bottom:15px;display:flex;justify-content:space-between;font-weight:bold;font-size:16px;">
+        <span>الإجمالي النهائي:</span>
+        <span id="checkoutFinalTotal" style="color:var(--primary);">0 ل.س</span>
       </div>
 
       <button
         class="primary-btn"
         onclick="submitCheckout()"
       >
-        تأكيد الطلب
+        تأكيد وإرسال الطلب 🚀
       </button>
 
       <div id="checkoutMessage" class="auth-message"></div>
@@ -1661,6 +1813,192 @@
 
     </div>
 
+  </div>
+
+
+  <!-- =========================
+       AI SHOPPING ASSISTANT MODAL
+  ========================== -->
+
+  <div class="modal" id="aiAssistantModal">
+    <div class="modal-box modal-large" style="max-width:650px;">
+      <button class="modal-close" onclick="closeModal('aiAssistantModal')">×</button>
+
+      <div class="modal-title">
+        <h2>مساعد التسوق الذكي 🤖</h2>
+        <p>اكتب طلبك باللغة الطبيعية ليرشح لك أفضل المنتجات بالسوق السوري</p>
+      </div>
+
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:12px;border-radius:12px;margin-bottom:15px;font-size:12px;color:#166534;">
+        💡 <strong>مثال:</strong> "بدي موبايل للتصوير والألعاب وبحدود 4 ملايين ليرة" أو "فناجين قهوة سيراميك للمنزل"
+      </div>
+
+      <div class="form-group" style="display:flex;gap:8px;">
+        <input type="text" id="aiQueryInput" class="form-control" placeholder="ما الذي تبحث عنه اليوم؟..." style="flex:1;" onkeydown="if(event.key==='Enter') submitAIQuery()">
+        <button class="primary-btn" style="width:auto;padding:0 20px;margin:0;" onclick="submitAIQuery()">بحث ذكي 🔍</button>
+      </div>
+
+      <div id="aiResponseContainer" style="margin-top:20px;display:none;">
+        <div id="aiReplyMessage" style="background:#f8fafc;border-right:4px solid var(--primary);padding:12px 15px;border-radius:8px;font-size:13px;margin-bottom:15px;line-height:1.6;"></div>
+        <h4 style="font-size:14px;margin-bottom:10px;color:var(--dark);">المنتجات المقترحة لك:</h4>
+        <div id="aiRecommendationsGrid" style="display:grid;grid-template-columns:repeat(2, 1fr);gap:10px;"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- =========================
+       WISHLIST MODAL
+  ========================== -->
+
+  <div class="modal" id="wishlistModal">
+    <div class="modal-box modal-large">
+      <button class="modal-close" onclick="closeModal('wishlistModal')">×</button>
+
+      <div class="modal-title">
+        <h2>قائمة المفضلة ❤️</h2>
+        <p>احفظ المنتجات المفضلة لديك للشراء لاحقاً</p>
+      </div>
+
+      <div id="wishlistItemsList" style="max-height:350px;overflow-y:auto;margin-bottom:15px;"></div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding-top:12px;">
+        <button class="secondary-btn" style="width:auto;margin:0;padding:0 15px;font-size:12px;" onclick="shareWishlistLink()">🔗 مشاركة المفضلة</button>
+        <button class="primary-btn" style="width:auto;margin:0;padding:0 20px;" onclick="moveAllWishlistToCart()">🛒 نقل الكل إلى السلة</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- =========================
+       REQUEST A PRODUCT (اطلب منتجاً) MODAL
+  ========================== -->
+
+  <div class="modal" id="requestProductModal">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeModal('requestProductModal')">×</button>
+
+      <div class="modal-title">
+        <h2>اطلب منتجاً غير متوفر 💡</h2>
+        <p>أرسل مواصفات المنتج الذي تبحث عنه ليصلك عروض من المتاجر</p>
+      </div>
+
+      <div class="form-group">
+        <label for="reqProdName">اسم المنتج المطلوبة</label>
+        <input type="text" class="form-control" id="reqProdName" placeholder="مثال: شاشة سامسونج 55 بوصة 4K">
+      </div>
+
+      <div class="form-group">
+        <label for="reqProdDesc">الوصف والمواصفات التفصيلية</label>
+        <textarea class="form-control" id="reqProdDesc" placeholder="اذكر أي تفاصيل دقيقة أو لون أو ماركة ترغب بها"></textarea>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="form-group">
+          <label for="reqProdBudget">الميزانية المتوقعة (ل.س)</label>
+          <input type="number" class="form-control" id="reqProdBudget" placeholder="1500000">
+        </div>
+        <div class="form-group">
+          <label for="reqProdQty">الكمية المطلوبة</label>
+          <input type="number" class="form-control" id="reqProdQty" value="1">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="reqProdCity">المحافظة / المدينة</label>
+        <input type="text" class="form-control" id="reqProdCity" placeholder="دمشق، حلب...">
+      </div>
+
+      <button class="primary-btn" onclick="submitProductRequestForm()">إرسال الطلب للمتاجر 🚀</button>
+      <div id="reqProdMsg" class="auth-message"></div>
+    </div>
+  </div>
+
+
+  <!-- =========================
+       ADMIN DASHBOARD MODAL
+  ========================== -->
+
+  <div class="modal" id="adminDashboardModal">
+    <div class="modal-box modal-large" style="max-width:900px;">
+      <button class="modal-close" onclick="closeModal('adminDashboardModal')">×</button>
+
+      <div class="modal-title">
+        <h2>لوحة تحكم المشرف ⚙️</h2>
+        <p>إدارة منصة Syria Market والمتاجر والطلبات</p>
+      </div>
+
+      <!-- Admin Nav Tabs -->
+      <div style="display:flex;gap:8px;border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:15px;overflow-x:auto;">
+        <button class="secondary-btn" style="width:auto;margin:0;padding:6px 12px;font-size:12px;" onclick="showAdminTab('overview')">📊 الإحصائيات</button>
+        <button class="secondary-btn" style="width:auto;margin:0;padding:6px 12px;font-size:12px;" onclick="showAdminTab('orders')">📋 الطلبات</button>
+        <button class="secondary-btn" style="width:auto;margin:0;padding:6px 12px;font-size:12px;" onclick="showAdminTab('categories')">📦 التصنيفات</button>
+        <button class="secondary-btn" style="width:auto;margin:0;padding:6px 12px;font-size:12px;" onclick="showAdminTab('sellers')">🏪 البائعين</button>
+        <button class="secondary-btn" style="width:auto;margin:0;padding:6px 12px;font-size:12px;" onclick="showAdminTab('payments')">💳 بوابات الدفع</button>
+      </div>
+
+      <!-- Overview Tab -->
+      <div id="adminTabOverview">
+        <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:12px;margin-bottom:20px;">
+          <div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:15px;border-radius:12px;text-align:center;">
+            <div style="font-size:12px;color:#166534;">إجمالي المبيعات (GMV)</div>
+            <strong id="adminStatRevenue" style="font-size:20px;color:#15803d;">0 ل.س</strong>
+          </div>
+          <div style="background:#f0f9ff;border:1px solid #bae6fd;padding:15px;border-radius:12px;text-align:center;">
+            <div style="font-size:12px;color:#075985;">إجمالي الطلبات</div>
+            <strong id="adminStatOrders" style="font-size:20px;color:#0284c7;">0</strong>
+          </div>
+          <div style="background:#fff7ed;border:1px solid #fed7aa;padding:15px;border-radius:12px;text-align:center;">
+            <div style="font-size:12px;color:#9a3412;">المتاجر المسجلة</div>
+            <strong id="adminStatSellers" style="font-size:20px;color:#c2410c;">0</strong>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2, 1fr);gap:12px;">
+          <div style="background:#faf5ff;border:1px solid #e9d5ff;padding:15px;border-radius:12px;text-align:center;">
+            <div style="font-size:12px;color:#6b21a8;">المنتجات بالمخزون</div>
+            <strong id="adminStatProducts" style="font-size:18px;color:#7e22ce;">0</strong>
+          </div>
+          <div style="background:#fef2f2;border:1px solid #fecaca;padding:15px;border-radius:12px;text-align:center;">
+            <div style="font-size:12px;color:#991b1b;">منتجات بمخزون منخفض</div>
+            <strong id="adminStatLowStock" style="font-size:18px;color:#dc2626;">0</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Orders Tab -->
+      <div id="adminTabOrders" style="display:none;">
+        <h4 style="margin-bottom:10px;font-size:15px;">إدارة الطلبات</h4>
+        <div id="adminOrdersList" style="max-height:350px;overflow-y:auto;font-size:13px;">
+          <p style="color:var(--muted);text-align:center;">جاري تحميل الطلبات...</p>
+        </div>
+      </div>
+
+      <!-- Categories Tab -->
+      <div id="adminTabCategories" style="display:none;">
+        <h4 style="margin-bottom:10px;font-size:15px;">إدارة التصنيفات</h4>
+        <div style="display:flex;gap:10px;margin-bottom:15px;">
+          <input type="text" id="adminNewCatName" class="form-control" placeholder="اسم التصنيف الجديد (مثال: مستلزمات أطفال)" style="flex:1;">
+          <input type="text" id="adminNewCatIcon" class="form-control" placeholder="أيقونة (🧸)" style="width:70px;text-align:center;">
+          <button class="primary-btn" style="width:auto;padding:0 20px;margin:0;" onclick="submitAdminAddCategory()">إضافة</button>
+        </div>
+        <div id="adminCategoriesList" style="max-height:250px;overflow-y:auto;"></div>
+      </div>
+
+      <!-- Sellers Tab -->
+      <div id="adminTabSellers" style="display:none;">
+        <h4 style="margin-bottom:10px;font-size:15px;">المتاجر والبائعين المسجلين</h4>
+        <div id="adminSellersList" style="max-height:300px;overflow-y:auto;">
+          <p style="color:var(--muted);text-align:center;">جاري تحميل المتاجر...</p>
+        </div>
+      </div>
+
+      <!-- Payments Tab -->
+      <div id="adminTabPayments" style="display:none;">
+        <h4 style="margin-bottom:10px;font-size:15px;">حالة بوابات الدفع بالسوق السوري</h4>
+        <div id="adminPaymentGatewaysList" style="font-size:13px;"></div>
+      </div>
+
+    </div>
   </div>
 
 
@@ -2058,13 +2396,23 @@
                     ${formatPrice(product.price)}
                   </div>
 
-                  <button
-                    class="add-btn"
-                    onclick="addProductToCart('${safeId}')"
-                    ${product.stock <= 0 ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}
-                  >
-                    ${product.stock <= 0 ? 'نفذت' : '🛒 أضف'}
-                  </button>
+                  <div style="display:flex;gap:4px;">
+                    <button
+                      class="secondary-btn"
+                      style="width:34px;height:34px;margin:0;padding:0;font-size:14px;border-radius:8px;"
+                      title="إضافة للمفضلة"
+                      onclick="toggleWishlistItem({id:'${safeId}', name:'${safeName}', price:${product.price}})"
+                    >
+                      ❤️
+                    </button>
+                    <button
+                      class="add-btn"
+                      onclick="addProductToCart('${safeId}')"
+                      ${product.stock <= 0 ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : ''}
+                    >
+                      ${product.stock <= 0 ? 'نفذت' : '🛒 أضف'}
+                    </button>
+                  </div>
 
                 </div>
 
@@ -2862,6 +3210,8 @@
 
       status.textContent =
         user ? "حسابي" : "الحساب";
+
+      await checkAndShowAdminNav();
     }
 
 
@@ -3054,6 +3404,100 @@
        CHECKOUT
        ===================================================== */
 
+    let appliedDiscountAmount = 0;
+
+    function handlePaymentMethodChange() {
+      const select = document.getElementById("checkoutPaymentMethod");
+      const notice = document.getElementById("paymentProviderNotice");
+      if (!select || !notice) return;
+
+      const val = select.value;
+      if (val === "cod") {
+        notice.style.background = "#f0fdf4";
+        notice.style.color = "#166534";
+        notice.style.borderColor = "#bbf7d0";
+        notice.textContent = "الدفع عند الاستلام مفعّل رسمياً. سيتم إرسال الشحنة والتسليم نقداً 💵";
+      } else if (val === "sham_cash") {
+        notice.style.background = "#fff7ed";
+        notice.style.color = "#9a3412";
+        notice.style.borderColor = "#fed7aa";
+        notice.textContent = "⚠️ الدفع عبر شام كاش غير مفعّل حالياً - يتطلب إدخال مفاتيح بائع شام كاش المعتمدة في الإعدادات.";
+      } else if (val === "bank_transfer") {
+        notice.style.background = "#eff6ff";
+        notice.style.color = "#1e40af";
+        notice.style.borderColor = "#bfdbfe";
+        notice.textContent = "🏦 التحويل البنكي مفعّل - يمكنك التحويل لحساب المصرف التجاري السوري أو بيمو وإرفاق الرقم المرجعي في الملاحظات.";
+      } else if (val === "ecash") {
+        notice.style.background = "#fff7ed";
+        notice.style.color = "#9a3412";
+        notice.style.borderColor = "#fed7aa";
+        notice.textContent = "⚠️ بوابة إي كاش الوطنية غير مفعّلة حالياً - تتطلب مفاتيح مزود الخدمة.";
+      } else if (val === "card") {
+        notice.style.background = "#fef2f2";
+        notice.style.color = "#991b1b";
+        notice.style.borderColor = "#fecaca";
+        notice.textContent = "⚠️ الدفع بالبطاقات الدولية غير مفعّل حالياً.";
+      }
+    }
+
+    function applyCheckoutCoupon() {
+      const input = document.getElementById("checkoutCouponInput");
+      const msg = document.getElementById("checkoutCouponMsg");
+      if (!input || !msg) return;
+
+      const code = input.value;
+      const baseTotal = getCartTotal();
+
+      if (typeof validateCouponCode !== "function") return;
+      const res = validateCouponCode(code, baseTotal);
+
+      if (res.valid) {
+        appliedDiscountAmount = res.discountAmount;
+        msg.style.color = "#166534";
+        msg.textContent = `تم تطبيق الكوبون بنجاح! تم خصم ${formatPrice(res.discountAmount)} (${res.desc})`;
+      } else {
+        appliedDiscountAmount = 0;
+        msg.style.color = "#dc2626";
+        msg.textContent = res.error;
+      }
+
+      updateCheckoutFinalTotal();
+    }
+
+    function updateCheckoutFinalTotal() {
+      const el = document.getElementById("checkoutFinalTotal");
+      if (!el) return;
+      const finalTotal = Math.max(0, getCartTotal() - appliedDiscountAmount);
+      el.textContent = formatPrice(finalTotal);
+    }
+
+    function renderMultiSellerCheckoutBreakdown() {
+      const container = document.getElementById("checkoutSellersBreakdown");
+      if (!container) return;
+
+      const grouped = {};
+      cart.forEach(item => {
+        const sellerName = item.seller || "متجر سوري";
+        if (!grouped[sellerName]) grouped[sellerName] = [];
+        grouped[sellerName].push(item);
+      });
+
+      const sellers = Object.keys(grouped);
+      container.innerHTML = `
+        <div style="font-weight:bold;margin-bottom:6px;color:var(--dark);">تفاصيل الشراء حسب المتجر (${sellers.length} متجر):</div>
+        ${sellers.map(s => {
+          const items = grouped[s];
+          const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+          return `
+            <div style="border-top:1px dashed var(--border);padding-top:4px;margin-top:4px;display:flex;justify-content:space-between;align-items:center;">
+              <span>🏪 <strong>${escapeHTML(s)}</strong> (${items.length} منتج)</span>
+              <span style="color:var(--primary);font-weight:bold;">${formatPrice(subtotal)}</span>
+            </div>
+          `;
+        }).join("")}
+      `;
+    }
+
     async function startCheckout() {
 
       if (!cart.length) {
@@ -3099,6 +3543,14 @@
           if (cCity && profile.city) cCity.value = profile.city;
         }
       }
+
+      appliedDiscountAmount = 0;
+      if (document.getElementById("checkoutCouponInput")) document.getElementById("checkoutCouponInput").value = "";
+      if (document.getElementById("checkoutCouponMsg")) document.getElementById("checkoutCouponMsg").textContent = "";
+
+      renderMultiSellerCheckoutBreakdown();
+      handlePaymentMethodChange();
+      updateCheckoutFinalTotal();
 
       document.getElementById("checkoutMessage")
         .textContent = "";
@@ -3357,6 +3809,406 @@
       const form = document.getElementById("sellerAddProductForm");
       if (form) {
         form.style.display = form.style.display === "none" ? "block" : "none";
+      }
+    }
+
+    function toggleSellerCSVImport() {
+      const form = document.getElementById("sellerCSVImportForm");
+      if (form) {
+        form.style.display = form.style.display === "none" ? "block" : "none";
+      }
+    }
+
+    async function submitSellerCSVImport() {
+      const csvText = document.getElementById("sellerCSVInput")?.value;
+      const msg = document.getElementById("sellerCSVMsg");
+
+      if (typeof parseProductCSV !== "function") return;
+      const parsed = parseProductCSV(csvText);
+
+      if (!parsed.success) {
+        if (msg) {
+          msg.textContent = parsed.error;
+          msg.className = "auth-message error";
+        }
+        return;
+      }
+
+      if (msg) {
+        msg.textContent = `جاري رفع وإضافة ${parsed.products.length} منتج...`;
+        msg.className = "auth-message";
+      }
+
+      let count = 0;
+      for (const p of parsed.products) {
+        if (typeof addSellerProduct === "function") {
+          const res = await addSellerProduct(p);
+          if (res.success) count++;
+        }
+      }
+
+      if (msg) {
+        msg.textContent = `تم بنجاح استيراد ${count} منتج إلى متجرك! 🥳`;
+        msg.className = "auth-message success";
+      }
+
+      await loadProducts();
+      setTimeout(() => {
+        toggleSellerCSVImport();
+        openSellerInfo(null);
+      }, 1500);
+    }
+
+    /* =====================================================
+       AI SHOPPING ASSISTANT & WISHLIST CONTROLLERS
+       ===================================================== */
+
+    function openAIAssistantModal() {
+      openModal("aiAssistantModal");
+    }
+
+    function submitAIQuery() {
+      const input = document.getElementById("aiQueryInput");
+      const container = document.getElementById("aiResponseContainer");
+      const replyEl = document.getElementById("aiReplyMessage");
+      const grid = document.getElementById("aiRecommendationsGrid");
+
+      if (!input || !input.value.trim()) return;
+
+      const userText = input.value.trim();
+      if (typeof parseAIShoppingAssistantQuery !== "function") return;
+
+      const result = parseAIShoppingAssistantQuery(userText, allProducts);
+
+      if (container) container.style.display = "block";
+      if (replyEl) replyEl.textContent = result.reply;
+
+      if (grid) {
+        if (!result.recommendations || result.recommendations.length === 0) {
+          grid.innerHTML = `<p style="grid-column:1/-1;color:var(--muted);text-align:center;">لم يتم العثور على منتجات مطابقة.</p>`;
+        } else {
+          grid.innerHTML = result.recommendations.map(p => `
+            <div style="border:1px solid var(--border);border-radius:10px;padding:10px;background:#ffffff;">
+              <strong style="font-size:13px;display:block;margin-bottom:4px;color:var(--dark);">${escapeHTML(p.name)}</strong>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">${escapeHTML(p.seller)} | ${escapeHTML(p.category)}</div>
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:13px;font-weight:bold;color:var(--primary);">${formatPrice(p.price)}</span>
+                <button class="add-btn" style="padding:4px 8px;font-size:11px;" onclick="addProductToCart('${escapeHTML(p.id)}'); closeModal('aiAssistantModal');">🛒 أضف</button>
+              </div>
+            </div>
+          `).join("");
+        }
+      }
+    }
+
+    function openWishlistModal() {
+      renderWishlist();
+      openModal("wishlistModal");
+    }
+
+    function renderWishlist() {
+      const container = document.getElementById("wishlistItemsList");
+      if (!container) return;
+
+      if (typeof getWishlistsFromStorage !== "function") return;
+      const lists = getWishlistsFromStorage();
+      const defaultList = lists["قائمة الرغبات"] || [];
+
+      if (defaultList.length === 0) {
+        container.innerHTML = `<p style="color:var(--muted);text-align:center;padding:20px;">قائمة المفضلة فارغة حالياً.</p>`;
+        return;
+      }
+
+      container.innerHTML = defaultList.map(item => `
+        <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding:10px 0;">
+          <div>
+            <strong style="font-size:14px;color:var(--dark);">${escapeHTML(item.name)}</strong>
+            <div style="font-size:12px;color:var(--primary);">${formatPrice(item.price)}</div>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button class="add-btn" onclick="addProductToCart('${escapeHTML(item.id)}'); removeWishlistItem('${escapeHTML(item.id)}');">🛒 نقل للسلة</button>
+            <button class="remove-btn" onclick="removeWishlistItem('${escapeHTML(item.id)}')">🗑️</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function toggleWishlistItem(product) {
+      if (typeof getWishlistsFromStorage !== "function") return;
+      const lists = getWishlistsFromStorage();
+      let defaultList = lists["قائمة الرغبات"] || [];
+
+      const exists = defaultList.some(i => String(i.id) === String(product.id));
+      if (exists) {
+        defaultList = defaultList.filter(i => String(i.id) !== String(product.id));
+        showToast("تمت إزالة المنتج من المفضلة.");
+      } else {
+        defaultList.push({ id: product.id, name: product.name, price: product.price });
+        showToast("تمت إضافة المنتج إلى المفضلة ❤️");
+      }
+
+      lists["قائمة الرغبات"] = defaultList;
+      if (typeof saveWishlistsToStorage === "function") saveWishlistsToStorage(lists);
+    }
+
+    function removeWishlistItem(id) {
+      if (typeof getWishlistsFromStorage !== "function") return;
+      const lists = getWishlistsFromStorage();
+      let defaultList = lists["قائمة الرغبات"] || [];
+
+      lists["قائمة الرغبات"] = defaultList.filter(i => String(i.id) !== String(id));
+      if (typeof saveWishlistsToStorage === "function") saveWishlistsToStorage(lists);
+      renderWishlist();
+    }
+
+    function shareWishlistLink() {
+      navigator.clipboard?.writeText(window.location.href).then(() => {
+        showToast("تم نسخ رابط مفضلتك لتشاركه مع أصدقائك! 🔗");
+      }).catch(() => {
+        showToast("شارِك هذا الرابط مع أصدقائك!");
+      });
+    }
+
+    function moveAllWishlistToCart() {
+      if (typeof getWishlistsFromStorage !== "function") return;
+      const lists = getWishlistsFromStorage();
+      const defaultList = lists["قائمة الرغبات"] || [];
+
+      if (defaultList.length === 0) {
+        showToast("قائمة المفضلة فارغة.");
+        return;
+      }
+
+      defaultList.forEach(item => {
+        addProductToCart(item.id);
+      });
+
+      lists["قائمة الرغبات"] = [];
+      if (typeof saveWishlistsToStorage === "function") saveWishlistsToStorage(lists);
+      closeModal("wishlistModal");
+      openCart();
+    }
+
+    function openRequestProductModal() {
+      openModal("requestProductModal");
+    }
+
+    function submitProductRequestForm() {
+      const name = document.getElementById("reqProdName")?.value.trim();
+      const desc = document.getElementById("reqProdDesc")?.value.trim();
+      const budget = document.getElementById("reqProdBudget")?.value;
+      const city = document.getElementById("reqProdCity")?.value.trim();
+      const msg = document.getElementById("reqProdMsg");
+
+      if (!name || !city) {
+        if (msg) {
+          msg.textContent = "يرجى كتابة اسم المنتج والمدينة.";
+          msg.className = "auth-message error";
+        }
+        return;
+      }
+
+      if (msg) {
+        msg.textContent = "تم إرسال طلبك بنجاح للمتاجر! سنتواصل معك عند توفر العروض. 💡";
+        msg.className = "auth-message success";
+      }
+
+      setTimeout(() => {
+        closeModal("requestProductModal");
+        if (msg) msg.textContent = "";
+        showToast("تم إرسال طلبك المخصص بنجاح 💡");
+      }, 1500);
+    }
+
+    /* =====================================================
+       ADMIN DASHBOARD CONTROLLERS
+       ===================================================== */
+
+    async function checkAndShowAdminNav() {
+      if (typeof isUserAdmin === "function") {
+        const isAdmin = await isUserAdmin();
+        const navBtn = document.getElementById("adminNavBtn");
+        const footerLink = document.getElementById("adminFooterLink");
+
+        if (navBtn) navBtn.style.display = isAdmin ? "flex" : "none";
+        if (footerLink) footerLink.style.display = isAdmin ? "block" : "none";
+      }
+    }
+
+    function showAdminTab(tabName) {
+      const tabs = ["overview", "orders", "categories", "sellers", "payments"];
+      tabs.forEach(t => {
+        const el = document.getElementById("adminTab" + t.charAt(0).toUpperCase() + t.slice(1));
+        if (el) el.style.display = (t === tabName) ? "block" : "none";
+      });
+    }
+
+    async function openAdminDashboard(event) {
+      if (event) event.preventDefault();
+
+      if (typeof isUserAdmin === "function") {
+        const isAdmin = await isUserAdmin();
+        if (!isAdmin) {
+          showToast("غير مصرح: لوحة التحكم مخصصة لمدراء النظام فقط.");
+          return;
+        }
+      }
+
+      showAdminTab("overview");
+      openModal("adminDashboardModal");
+
+      // Load admin stats
+      if (typeof fetchAdminDashboardStats === "function") {
+        const res = await fetchAdminDashboardStats();
+        if (res.success) {
+          const s = res.stats;
+          const rev = document.getElementById("adminStatRevenue");
+          const ord = document.getElementById("adminStatOrders");
+          const sel = document.getElementById("adminStatSellers");
+          const prd = document.getElementById("adminStatProducts");
+          const low = document.getElementById("adminStatLowStock");
+
+          if (rev) rev.textContent = formatPrice(s.totalRevenue);
+          if (ord) ord.textContent = s.totalOrders;
+          if (sel) sel.textContent = s.totalSellers;
+          if (prd) prd.textContent = s.totalProducts;
+          if (low) low.textContent = s.lowStockCount;
+        }
+      }
+
+      // Render Admin Orders
+      if (typeof fetchAdminAllOrders === "function") {
+        const orders = await fetchAdminAllOrders();
+        const ordList = document.getElementById("adminOrdersList");
+        if (ordList) {
+          if (!orders || orders.length === 0) {
+            ordList.innerHTML = `<p style="color:var(--muted);text-align:center;padding:15px;">لا توجد طلبات في المنصة حتى الآن.</p>`;
+          } else {
+            ordList.innerHTML = orders.map(o => `
+              <div style="border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px;background:#ffffff;">
+                <div style="display:flex;justify-content:space-between;font-weight:bold;">
+                  <span>طلب #${escapeHTML(String(o.id || '').substring(0,8))} - ${escapeHTML(o.customer_name || 'عميل')}</span>
+                  <span style="color:var(--primary);">${formatPrice(o.total_amount || 0)}</span>
+                </div>
+                <div style="font-size:12px;color:var(--muted);margin:4px 0;">
+                  الهاتف: ${escapeHTML(o.phone || '')} | المدينة: ${escapeHTML(o.city || '')} | العنوان: ${escapeHTML(o.address || '')}
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px dashed var(--border);padding-top:6px;margin-top:4px;">
+                  <div>الحالة الحالية: <strong style="color:var(--dark);">${escapeHTML(o.status || 'pending')}</strong></div>
+                  <select onchange="submitAdminOrderStatus('${escapeHTML(o.id)}', this.value)" style="font-size:11px;padding:3px 6px;border-radius:6px;border:1px solid var(--border);">
+                    <option value="">تغيير الحالة...</option>
+                    <option value="قيد الانتظار">قيد الانتظار (pending)</option>
+                    <option value="مؤكد">مؤكد (confirmed)</option>
+                    <option value="قيد التجهيز">قيد التجهيز (processing)</option>
+                    <option value="تم الشحن">تم الشحن (shipped)</option>
+                    <option value="تم التسليم">تم التسليم (delivered)</option>
+                    <option value="ملغي">ملغي (cancelled)</option>
+                  </select>
+                </div>
+              </div>
+            `).join("");
+          }
+        }
+      }
+
+      // Render Admin Categories
+      if (typeof fetchCategoriesFromSupabase === "function") {
+        const cats = await fetchCategoriesFromSupabase();
+        const catList = document.getElementById("adminCategoriesList");
+        if (catList && Array.isArray(cats)) {
+          catList.innerHTML = cats.map(c => `
+            <div style="display:flex;justify-content:space-between;align-items:center;border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin-bottom:6px;background:#ffffff;">
+              <span>${escapeHTML(c.icon || '📦')} <strong>${escapeHTML(c.name || c.title)}</strong></span>
+              <button class="remove-btn" onclick="submitAdminDeleteCategory('${escapeHTML(c.id)}')">🗑️ حذف</button>
+            </div>
+          `).join("");
+        }
+      }
+
+      // Render Admin Sellers
+      if (typeof fetchSellersFromSupabase === "function") {
+        const sellers = await fetchSellersFromSupabase();
+        const selList = document.getElementById("adminSellersList");
+        if (selList && Array.isArray(sellers)) {
+          selList.innerHTML = sellers.length === 0
+            ? `<p style="color:var(--muted);text-align:center;padding:15px;">لا يوجد بائعون مسجلون بعد.</p>`
+            : sellers.map(s => `
+                <div style="border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px;background:#ffffff;display:flex;justify-content:space-between;align-items:center;">
+                  <div>
+                    <strong style="color:var(--dark);font-size:14px;">${escapeHTML(s.store_name)}</strong>
+                    <div style="font-size:12px;color:var(--muted);">${escapeHTML(s.city || '')} | هاتف: ${escapeHTML(s.phone || '')}</div>
+                  </div>
+                  <span style="background:#dcfce7;color:#15803d;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:bold;">متجر نشط 🟢</span>
+                </div>
+              `).join("");
+        }
+      }
+
+      // Render Admin Payment Gateways
+      if (typeof getPaymentProvidersStatus === "function") {
+        const gateways = getPaymentProvidersStatus();
+        const payList = document.getElementById("adminPaymentGatewaysList");
+        if (payList) {
+          payList.innerHTML = gateways.map(g => `
+            <div style="border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;background:#f9fafb;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                <strong>${escapeHTML(g.icon)} ${escapeHTML(g.name)}</strong>
+                <span>${escapeHTML(g.statusText)}</span>
+              </div>
+              <div style="font-size:12px;color:var(--muted);">${escapeHTML(g.description)}</div>
+            </div>
+          `).join("");
+        }
+      }
+    }
+
+    async function submitAdminOrderStatus(orderId, status) {
+      if (!status) return;
+      if (typeof updateOrderStatusByAdmin === "function") {
+        const res = await updateOrderStatusByAdmin(orderId, status);
+        if (res.success) {
+          showToast("تم تحديث حالة الطلب بنجاح ✅");
+          openAdminDashboard(null);
+        } else {
+          showToast(res.error || "فشل تحديث الطلب.");
+        }
+      }
+    }
+
+    async function submitAdminAddCategory() {
+      const name = document.getElementById("adminNewCatName")?.value.trim();
+      const icon = document.getElementById("adminNewCatIcon")?.value.trim() || "📦";
+
+      if (!name) {
+        showToast("يرجى إدخال اسم التصنيف.");
+        return;
+      }
+
+      if (typeof addCategoryByAdmin === "function") {
+        const res = await addCategoryByAdmin(name, icon);
+        if (res.success) {
+          showToast("تمت إضافة التصنيف بنجاح 🥳");
+          if (document.getElementById("adminNewCatName")) document.getElementById("adminNewCatName").value = "";
+          if (document.getElementById("adminNewCatIcon")) document.getElementById("adminNewCatIcon").value = "";
+          await loadCategories();
+          openAdminDashboard(null);
+        } else {
+          showToast(res.error || "فشل إضافة التصنيف.");
+        }
+      }
+    }
+
+    async function submitAdminDeleteCategory(catId) {
+      if (!confirm("هل أنت تأكد من حذف هذا التصنيف؟")) return;
+      if (typeof deleteCategoryByAdmin === "function") {
+        const res = await deleteCategoryByAdmin(catId);
+        if (res.success) {
+          showToast("تم حذف التصنيف.");
+          await loadCategories();
+          openAdminDashboard(null);
+        } else {
+          showToast(res.error || "فشل حذف التصنيف.");
+        }
       }
     }
 
