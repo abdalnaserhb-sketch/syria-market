@@ -666,15 +666,472 @@ async function addSellerProduct(productData) {
 
 
 // ============================================
+// CUSTOMER, AI & PAYMENT MARKETPLACE SERVICES
+// ============================================
+
+/**
+ * Rule-Based Syrian Arabic Query Parser & Product Recommender (AI-Ready Architecture)
+ * Parses budget and Syrian dialect keywords on client side before backend AI model integration.
+ */
+function parseAIShoppingAssistantQuery(userPrompt, productsList = []) {
+  if (!userPrompt || typeof userPrompt !== "string") {
+    return {
+      reply: "أهلاً بك! أنا مساعد التسوق الذكي في Syria Market. كيف يمكنني مساعدتك اليوم؟",
+      recommendations: []
+    };
+  }
+
+  const text = userPrompt.toLowerCase();
+
+  // Extract budget if mentioned (e.g. 4 ملايين, 500 ألف, 2500000)
+  let maxBudget = null;
+  if (text.includes("مليون") || text.includes("ملايين")) {
+    const numMatch = text.match(/(\d+(?:\.\d+)?)\s*(?:مليون|ملايين)/);
+    if (numMatch) {
+      maxBudget = parseFloat(numMatch[1]) * 1000000;
+    }
+  } else if (text.includes("ألف") || text.includes("آلاف")) {
+    const numMatch = text.match(/(\d+(?:\.\d+)?)\s*(?:ألف|آلاف)/);
+    if (numMatch) {
+      maxBudget = parseFloat(numMatch[1]) * 1000;
+    }
+  } else {
+    const directMatch = text.match(/(\d{5,8})/);
+    if (directMatch) {
+      maxBudget = parseFloat(directMatch[1]);
+    }
+  }
+
+  // Keywords matching
+  let matches = Array.isArray(productsList) ? [...productsList] : [];
+
+  if (maxBudget) {
+    matches = matches.filter(p => Number(p.price) <= maxBudget);
+  }
+
+  if (text.includes("موبايل") || text.includes("هاتف") || text.includes("جوال") || text.includes("تصوير") || text.includes("ألعاب")) {
+    matches = matches.filter(p =>
+      (p.category && p.category.includes("إلكترونيات")) ||
+      (p.name && (p.name.includes("هاتف") || p.name.includes("ذكي") || p.name.includes("سماعة")))
+    );
+  } else if (text.includes("لبس") || text.includes("ألبسة") || text.includes("حذاء") || text.includes("ملابس")) {
+    matches = matches.filter(p => p.category && p.category.includes("ألبسة"));
+  } else if (text.includes("منزل") || text.includes("بيت") || text.includes("فنجان") || text.includes("أثاث")) {
+    matches = matches.filter(p => p.category && p.category.includes("منزل"));
+  }
+
+  // Sort best options by price or relevance
+  matches.sort((a, b) => b.price - a.price);
+  const topRecommendations = matches.slice(0, 3);
+
+  let replyText = "";
+  if (topRecommendations.length > 0) {
+    replyText = `بناءً على طلبك ("${userPrompt.trim()}"): ${maxBudget ? `ضمن ميزانية تصل إلى ${new Intl.NumberFormat("ar-SY").format(maxBudget)} ل.س، ` : ""}إليك أفضل الخيارات المقترحة من Syria Market:`;
+  } else {
+    replyText = `لم أجد منتجات مطابقة تماماً لمواصفاتك والميزانية المحددة ("${userPrompt.trim()}"). إليك بعض المنتجات الشائعة في السوق السوري:`;
+  }
+
+  return {
+    reply: replyText,
+    recommendations: topRecommendations.length > 0 ? topRecommendations : productsList.slice(0, 3)
+  };
+}
+
+/**
+ * Local Wishlists management
+ */
+function getWishlistsFromStorage() {
+  try {
+    const saved = localStorage.getItem("syriaMarketWishlists");
+    return saved ? JSON.parse(saved) : { "قائمة الرغبات": [] };
+  } catch (e) {
+    return { "قائمة الرغبات": [] };
+  }
+}
+
+function saveWishlistsToStorage(wishlists) {
+  try {
+    localStorage.setItem("syriaMarketWishlists", JSON.stringify(wishlists));
+  } catch (e) {
+    console.warn("Wishlist storage error:", e);
+  }
+}
+
+/**
+ * Payment Providers status configuration
+ */
+function getPaymentProvidersStatus() {
+  return [
+    {
+      id: "cod",
+      name: "الدفع عند الاستلام (Cash on Delivery)",
+      icon: "💵",
+      enabled: true,
+      description: "الدفع نقداً للشاعر/الموصل عند استلام الطلب",
+      statusText: "مفعّل ورسمي 🟢"
+    },
+    {
+      id: "sham_cash",
+      name: "شام كاش (Sham Cash)",
+      icon: "💳",
+      enabled: false,
+      description: "الدفع عبر تطبيق شام كاش الإلكتروني",
+      statusText: "الدفع عبر شام كاش غير مفعّل حالياً - يتطلب ضبط مفاتيح التاجر ⚠️"
+    },
+    {
+      id: "bank_transfer",
+      name: "حوالة بنكية معتمدة (Bank Transfer)",
+      icon: "🏦",
+      enabled: true,
+      description: "تحويل بنكي مباشر إلى الحساب المعتمد للمنصة/المتجر مع إرفاق إشعار التحويل",
+      statusText: "مفعّل (تحقق يدوياً) 🔵"
+    },
+    {
+      id: "ecash",
+      name: "إي كاش (E-Cash)",
+      icon: "📱",
+      enabled: false,
+      description: "الدفع عبر بوابة إي كاش الوطنية",
+      statusText: "غير مفعّل حالياً - يتطلب ضبط الإعدادات ⚠️"
+    },
+    {
+      id: "card",
+      name: "بطاقات الفيزا والماستركارد الدولية",
+      icon: "💳",
+      enabled: false,
+      description: "الدفع عبر بطاقات الائتمان الدولية",
+      statusText: "غير مفعّل حالياً - يتطلب بوابة دفع معتمدة ⚠️"
+    }
+  ];
+}
+
+/**
+ * Client-Side Demo Coupon Preview Validator
+ * Note: This is a frontend UI preview only. Production order charges must verify coupons server-side.
+ */
+function validateCouponCode(code, totalAmount) {
+  if (!code || typeof code !== "string") return { valid: false, error: "رمز الكوبون غير مدخل." };
+  const cleanCode = code.trim().toUpperCase();
+
+  const DEMO_COUPONS = {
+    "SYRIA10": { type: "percent", value: 10, minOrder: 50000, desc: "[معاينة واجهة] خصم 10%" },
+    "WELCOME": { type: "percent", value: 15, minOrder: 100000, desc: "[معاينة واجهة] خصم 15%" }
+  };
+
+  const coupon = DEMO_COUPONS[cleanCode];
+  if (!coupon) {
+    return { valid: false, error: "معاينة واجهة: رمز الكوبون غير مسجل بالمعاينة." };
+  }
+
+  if (totalAmount < coupon.minOrder) {
+    return {
+      valid: false,
+      error: `[معاينة] الحد الأدنى للاستفادة هو ${new Intl.NumberFormat("ar-SY").format(coupon.minOrder)} ل.س.`
+    };
+  }
+
+  let discountAmount = 0;
+  if (coupon.type === "percent") {
+    discountAmount = (totalAmount * coupon.value) / 100;
+  } else {
+    discountAmount = coupon.value;
+  }
+
+  return {
+    valid: true,
+    code: cleanCode,
+    isClientPreviewOnly: true,
+    discountAmount: Math.min(discountAmount, totalAmount),
+    desc: coupon.desc + " (معاينة واجهة العميل فقط - غير مؤكد للخصم النهائي بدون تحقق بالخلفية)"
+  };
+}
+
+// ============================================
 // ADMIN READY HELPER SERVICES
 // ============================================
 
 /**
- * Check if the currently logged in user has admin role
+ * Check if the currently logged in user has admin role for UI rendering.
+ * Note: This check only controls UI visibility. Authoritative security relies on Supabase RLS policies.
  */
 async function isUserAdmin() {
   const profile = await getUserProfile();
   return profile && (profile.role === "admin" || profile.role === "administrator");
+}
+
+/**
+ * Fetch overview statistics for Admin Dashboard
+ */
+async function fetchAdminDashboardStats() {
+  if (!supabaseClient) {
+    return {
+      totalRevenue: 0,
+      totalOrders: 0,
+      totalCustomers: 0,
+      totalSellers: 0,
+      totalProducts: 0,
+      lowStockCount: 0,
+      pendingOrdersCount: 0,
+      pendingSellersCount: 0
+    };
+  }
+
+  try {
+    const isAdmin = await isUserAdmin();
+    if (!isAdmin) {
+      return { error: "غير مصرح: هذه العملية تتطلب صلاحيات المشرف." };
+    }
+
+    const [ordersRes, sellersRes, productsRes, profilesRes] = await Promise.all([
+      supabaseClient.from("orders").select("id, total_amount, status"),
+      supabaseClient.from("sellers").select("id, store_name"),
+      supabaseClient.from("products").select("id, stock, is_active"),
+      supabaseClient.from("profiles").select("id, role")
+    ]);
+
+    const orders = ordersRes.data || [];
+    const sellers = sellersRes.data || [];
+    const products = productsRes.data || [];
+    const profiles = profilesRes.data || [];
+
+    const totalRevenue = orders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
+    const lowStockCount = products.filter(p => Number(p.stock) <= 3).length;
+    const pendingOrdersCount = orders.filter(o => o.status === "pending" || o.status === "قيد الانتظار").length;
+    const totalCustomers = profiles.filter(p => p.role === "customer" || !p.role).length;
+
+    return {
+      success: true,
+      stats: {
+        totalRevenue,
+        totalOrders: orders.length,
+        totalCustomers,
+        totalSellers: sellers.length,
+        totalProducts: products.length,
+        lowStockCount,
+        pendingOrdersCount,
+        pendingSellersCount: 0
+      }
+    };
+  } catch (error) {
+    console.error("fetchAdminDashboardStats error:", error);
+    return { error: "فشل تحميل إحصائيات المشرف." };
+  }
+}
+
+/**
+ * Fetch all orders for Admin Management
+ */
+async function fetchAdminAllOrders() {
+  if (!supabaseClient) return [];
+  const isAdmin = await isUserAdmin();
+  if (!isAdmin) return [];
+
+  try {
+    const { data, error } = await supabaseClient
+      .from("orders")
+      .select("*, order_items(*)")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.error("fetchAdminAllOrders error:", error);
+    return [];
+  }
+}
+
+/**
+ * Update order status as Admin
+ */
+async function updateOrderStatusByAdmin(orderId, newStatus) {
+  if (!supabaseClient) return { success: false, error: "الاتصال بقاعدة البيانات غير متاح." };
+  const isAdmin = await isUserAdmin();
+  if (!isAdmin) return { success: false, error: "غير مصرح: تتطلب صلاحيات المشرف." };
+
+  try {
+    const { data, error } = await supabaseClient
+      .from("orders")
+      .update({ status: newStatus })
+      .eq("id", orderId)
+      .select();
+
+    if (error) throw error;
+    return { success: true, data };
+  } catch (error) {
+    console.error("updateOrderStatusByAdmin error:", error);
+    return { success: false, error: translateAuthError(error.message) || "فشل تحديث حالة الطلب" };
+  }
+}
+
+/**
+ * Add category as Admin
+ */
+async function addCategoryByAdmin(categoryName, icon = "📦") {
+  if (!supabaseClient) return { success: false, error: "الاتصال بقاعدة البيانات غير متاح." };
+  const isAdmin = await isUserAdmin();
+  if (!isAdmin) return { success: false, error: "غير مصرح." };
+
+  try {
+    const { data, error } = await supabaseClient
+      .from("categories")
+      .insert([{ name: categoryName, icon: icon, created_at: new Date().toISOString() }])
+      .select();
+
+    if (error) throw error;
+    return { success: true, data };
+  } catch (error) {
+    console.error("addCategoryByAdmin error:", error);
+    return { success: false, error: translateAuthError(error.message) || "فشل إضافة التصنيف." };
+  }
+}
+
+/**
+ * Delete category as Admin
+ */
+async function deleteCategoryByAdmin(categoryId) {
+  if (!supabaseClient) return { success: false, error: "الاتصال بقاعدة البيانات غير متاح." };
+  const isAdmin = await isUserAdmin();
+  if (!isAdmin) return { success: false, error: "غير مصرح." };
+
+  try {
+    const { error } = await supabaseClient
+      .from("categories")
+      .delete()
+      .eq("id", categoryId);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (error) {
+    console.error("deleteCategoryByAdmin error:", error);
+    return { success: false, error: translateAuthError(error.message) || "فشل حذف التصنيف." };
+  }
+}
+
+/**
+ * Fetch seller performance analytics strictly filtering by authenticated seller_id
+ */
+async function fetchSellerAnalytics() {
+  const user = await getCurrentUser();
+  if (!user || !supabaseClient) return null;
+
+  try {
+    const sellers = await fetchSellersFromSupabase();
+    const myStore = Array.isArray(sellers) ? sellers.find(s => String(s.user_id) === String(user.id)) : null;
+
+    if (!myStore) return null;
+
+    // Fetch products strictly matching authenticated store ID
+    const { data: myProductsData, error } = await supabaseClient
+      .from("products")
+      .select("*")
+      .eq("seller_id", myStore.id);
+
+    if (error) throw error;
+
+    const myProducts = myProductsData || [];
+    const totalProducts = myProducts.length;
+    const activeProducts = myProducts.filter(p => p.is_active !== false).length;
+    const lowStockProducts = myProducts.filter(p => Number(p.stock) <= 3);
+
+    return {
+      storeId: myStore.id,
+      storeName: myStore.store_name,
+      totalProducts,
+      activeProducts,
+      lowStockProducts,
+      myProducts
+    };
+  } catch (error) {
+    console.error("fetchSellerAnalytics error:", error);
+    return null;
+  }
+}
+
+/**
+ * RFC-4180 Compliant CSV Parser for product bulk creation.
+ * Supports quoted fields, escaped quotes (""), commas inside quotes, and multiline values.
+ */
+function parseProductCSV(csvText) {
+  if (!csvText || typeof csvText !== "string") {
+    return { success: false, error: "نص CSV فارغ أو غير صحيح." };
+  }
+
+  function parseCSVRows(str) {
+    const rows = [];
+    let currentRow = [];
+    let currentField = '';
+    let insideQuotes = false;
+
+    for (let i = 0; i < str.length; i++) {
+      const char = str[i];
+      const nextChar = str[i + 1];
+
+      if (char === '"') {
+        if (insideQuotes && nextChar === '"') {
+          currentField += '"';
+          i++; // Skip escaped quote
+        } else {
+          insideQuotes = !insideQuotes;
+        }
+      } else if (char === ',' && !insideQuotes) {
+        currentRow.push(currentField.trim());
+        currentField = '';
+      } else if ((char === '\r' || char === '\n') && !insideQuotes) {
+        if (char === '\r' && nextChar === '\n') {
+          i++;
+        }
+        currentRow.push(currentField.trim());
+        if (currentRow.some(f => f !== '')) {
+          rows.push(currentRow);
+        }
+        currentRow = [];
+        currentField = '';
+      } else {
+        currentField += char;
+      }
+    }
+
+    if (currentField !== '' || currentRow.length > 0) {
+      currentRow.push(currentField.trim());
+      if (currentRow.some(f => f !== '')) {
+        rows.push(currentRow);
+      }
+    }
+
+    return rows;
+  }
+
+  const rows = parseCSVRows(csvText);
+  if (rows.length === 0) {
+    return { success: false, error: "لا توجد أسطر بيانات لمعالجتها." };
+  }
+
+  let startIndex = 0;
+  const firstRowStr = rows[0].join(',').toLowerCase();
+  if (firstRowStr.includes("name") || firstRowStr.includes("اسم")) {
+    startIndex = 1;
+  }
+
+  const parsedProducts = [];
+  for (let i = startIndex; i < rows.length; i++) {
+    const cols = rows[i];
+    if (cols.length >= 2) {
+      const name = cols[0];
+      const price = Number(cols[1].replace(/[^\d.-]/g, "")) || 0;
+      const stock = cols[2] ? Number(cols[2].replace(/[^\d.-]/g, "")) : 10;
+      const description = cols[3] || "";
+
+      if (name && !isNaN(price)) {
+        parsedProducts.push({ name, price, stock: isNaN(stock) ? 10 : stock, description });
+      }
+    }
+  }
+
+  if (parsedProducts.length === 0) {
+    return { success: false, error: "لم يتم التعرف على أي منتجات صالحة في نص CSV." };
+  }
+
+  return { success: true, products: parsedProducts };
 }
 
 // ============================================
