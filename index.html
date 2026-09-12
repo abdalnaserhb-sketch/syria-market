@@ -3316,28 +3316,26 @@
           .textContent =
           user.email || "";
 
-        document.getElementById("accountName")
-          .textContent =
-          user.user_metadata?.full_name ||
-          "المستخدم";
-
         const pFullName = document.getElementById("profileFullName");
-        if (pFullName) {
-          pFullName.value = user.user_metadata?.full_name || "";
-        }
+        const pPhone = document.getElementById("profilePhone");
+        const pCity = document.getElementById("profileCity");
+
+        // Set default values from user_metadata first
+        let displayName = user.user_metadata?.full_name || "المستخدم";
 
         if (typeof getUserProfile === "function") {
           const profile = await getUserProfile();
           if (profile) {
-            const pPhone = document.getElementById("profilePhone");
-            const pCity = document.getElementById("profileCity");
+            if (profile.full_name) {
+              displayName = profile.full_name;
+            }
             if (pPhone) pPhone.value = profile.phone || "";
             if (pCity) pCity.value = profile.city || "";
-            if (profile.full_name && pFullName) {
-              pFullName.value = profile.full_name;
-            }
           }
         }
+
+        document.getElementById("accountName").textContent = displayName;
+        if (pFullName) pFullName.value = displayName;
 
         loadUserOrdersInModal();
 
@@ -3531,19 +3529,18 @@
 
       closeModal("cartModal");
 
-      // Auto pre-fill checkout fields if user profile exists
-      if (user.user_metadata?.full_name) {
-        const cName = document.getElementById("checkoutName");
-        if (cName && !cName.value) cName.value = user.user_metadata.full_name;
+      // Auto pre-fill checkout fields reliably from Supabase user profile
+      const cName = document.getElementById("checkoutName");
+      const cPhone = document.getElementById("checkoutPhone");
+      const cCity = document.getElementById("checkoutCity");
+
+      if (user.user_metadata?.full_name && cName && !cName.value) {
+        cName.value = user.user_metadata.full_name;
       }
 
       if (typeof getUserProfile === "function") {
         const profile = await getUserProfile();
         if (profile) {
-          const cName = document.getElementById("checkoutName");
-          const cPhone = document.getElementById("checkoutPhone");
-          const cCity = document.getElementById("checkoutCity");
-
           if (cName && profile.full_name) cName.value = profile.full_name;
           if (cPhone && profile.phone) cPhone.value = profile.phone;
           if (cCity && profile.city) cCity.value = profile.city;
