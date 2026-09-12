@@ -1,6 +1,6 @@
 # Syria Market | السوق السوري 🇸🇾
 
-Syria Market is a scalable, production-ready Syrian multi-vendor e-commerce marketplace web application built with HTML5, CSS3, JavaScript (ES6+), and Supabase integration.
+Syria Market is a scalable Syria Market marketplace core with production-ready implemented features and documented architecture for advanced features, built with HTML5, CSS3, JavaScript (ES6+), and Supabase integration.
 
 ---
 
@@ -59,7 +59,7 @@ To unlock database-level persistence for advanced enterprise features in future 
 | **20. Coupons & Discount Codes** | `CLIENT PREVIEW / REQUIRES SCHEMA` | Client-side UI coupon preview validator (`SYRIA10`, `WELCOME`) applying percentage and fixed discounts during checkout preview. Production order charges require backend coupon validation and a `coupons` table. |
 | **21. Payment Gateways**: | | |
 | - *Cash on Delivery (الدفع عند الاستلام)* | `LIVE` | Fully functional primary Syrian payment method. |
-| - *Bank Transfer (حوالة بنكية)* | `LIVE` | Manual verification transfer notice for Syrian Commercial Bank & Bank Bemo. |
+| - *Bank Transfer (حوالة بنكية)* | `LIVE` | Manual bank transfer with configurable provider/account details and manual verification. |
 | - *Sham Cash (شام كاش)* | `REQUIRES EXTERNAL PROVIDER` | Shows "الدفع عبر شام كاش غير مفعّل حالياً - يتطلب ضبط مفاتيح التاجر". Never faked. |
 | - *E-Cash (إي كاش)* | `REQUIRES EXTERNAL PROVIDER` | National E-Cash gateway status handler requiring merchant API setup. |
 | - *Visa / Mastercard* | `REQUIRES EXTERNAL PROVIDER` | Hosted card gateway checkout architecture. |
