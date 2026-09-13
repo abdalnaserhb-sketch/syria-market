@@ -4411,12 +4411,13 @@
       const registerSec = document.getElementById("sellerRegisterSection");
       const dashboardSec = document.getElementById("sellerDashboardSection");
 
-      let sellers = [];
-      if (typeof fetchSellersFromSupabase === "function") {
-        sellers = await fetchSellersFromSupabase();
+      let myStore = null;
+      if (typeof fetchMySellerStoreFromSupabase === "function") {
+        myStore = await fetchMySellerStoreFromSupabase();
+      } else if (typeof fetchSellersFromSupabase === "function") {
+        const sellers = await fetchSellersFromSupabase();
+        myStore = Array.isArray(sellers) ? sellers.find(s => String(s.user_id) === String(user.id)) : null;
       }
-
-      const myStore = Array.isArray(sellers) ? sellers.find(s => s.user_id === user.id) : null;
 
       if (myStore) {
         if (registerSec) registerSec.style.display = "none";
@@ -4424,6 +4425,17 @@
 
         const storeTitle = document.getElementById("sellerDashboardStoreName");
         if (storeTitle) storeTitle.textContent = myStore.store_name || "متجري";
+
+        // Pre-fill profile phone and city into registration form if available
+        if (typeof getUserProfile === "function") {
+          const profile = await getUserProfile();
+          if (profile) {
+            const sPhone = document.getElementById("sellerPhone");
+            const sCity = document.getElementById("sellerCity");
+            if (sPhone && !sPhone.value) sPhone.value = profile.phone || "";
+            if (sCity && !sCity.value) sCity.value = profile.city || "";
+          }
+        }
 
         // Filter products for this seller using seller_id or store_name
         const prodList = document.getElementById("sellerProductsList");
@@ -4458,6 +4470,17 @@
       } else {
         if (registerSec) registerSec.style.display = "block";
         if (dashboardSec) dashboardSec.style.display = "none";
+
+        // Auto pre-fill seller registration phone and city from profile if available
+        if (typeof getUserProfile === "function") {
+          const profile = await getUserProfile();
+          if (profile) {
+            const sPhone = document.getElementById("sellerPhone");
+            const sCity = document.getElementById("sellerCity");
+            if (sPhone && !sPhone.value) sPhone.value = profile.phone || "";
+            if (sCity && !sCity.value) sCity.value = profile.city || "";
+          }
+        }
       }
 
       openModal("sellerModal");

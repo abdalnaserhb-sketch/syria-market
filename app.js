@@ -280,9 +280,8 @@ async function updateSellerProduct(productId, updates) {
       return { success: false, error: "يرجى تسجيل الدخول كبائع لتعديل المنتج." };
     }
 
-    // Resolve user's seller_id from database
-    const sellers = await fetchSellersFromSupabase();
-    const myStore = Array.isArray(sellers) ? sellers.find(s => String(s.user_id) === String(user.id)) : null;
+    // Resolve user's seller_id strictly from database using user_id
+    const myStore = await fetchMySellerStoreFromSupabase();
 
     if (!myStore) {
       return { success: false, error: "غير مصرح: لم يتم العثور على متجر لهذا حساب." };
@@ -612,7 +611,33 @@ async function registerSellerStore(storeData) {
     return { success: true, data: data };
   } catch (error) {
     console.error("registerSellerStore error:", error);
-    return { success: false, error: error.message || "فشل تسجيل المتجر." };
+    return { success: false, error: translateAuthError(error.message) || "فشل تسجيل المتجر." };
+  }
+}
+
+/**
+ * Fetch seller profile strictly for authenticated user
+ */
+async function fetchMySellerStoreFromSupabase() {
+  const user = await getCurrentUser();
+  if (!user || !supabaseClient) return null;
+
+  try {
+    const { data, error } = await supabaseClient
+      .from("sellers")
+      .select("*")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (error) {
+      console.warn("fetchMySellerStore warning:", error.message);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("fetchMySellerStore exception:", error);
+    return null;
   }
 }
 
@@ -632,8 +657,7 @@ async function addSellerProduct(productData) {
     }
 
     // Always resolve seller_id strictly from the database for the authenticated user
-    const sellers = await fetchSellersFromSupabase();
-    const myStore = Array.isArray(sellers) ? sellers.find(s => String(s.user_id) === String(user.id)) : null;
+    const myStore = await fetchMySellerStoreFromSupabase();
 
     if (!myStore) {
       return { success: false, error: "لم يتم العثور على متجر مسجل لهذا المستخدم." };
