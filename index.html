@@ -3333,8 +3333,10 @@
             const pCity = document.getElementById("profileCity");
             if (pPhone) pPhone.value = profile.phone || "";
             if (pCity) pCity.value = profile.city || "";
-            if (profile.full_name && pFullName) {
-              pFullName.value = profile.full_name;
+            if (profile.full_name) {
+              if (pFullName) pFullName.value = profile.full_name;
+              const accName = document.getElementById("accountName");
+              if (accName) accName.textContent = profile.full_name;
             }
           }
         }
