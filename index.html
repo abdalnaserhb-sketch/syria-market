@@ -3331,10 +3331,12 @@
           if (profile) {
             const pPhone = document.getElementById("profilePhone");
             const pCity = document.getElementById("profileCity");
+            const accountNameEl = document.getElementById("accountName");
             if (pPhone) pPhone.value = profile.phone || "";
             if (pCity) pCity.value = profile.city || "";
-            if (profile.full_name && pFullName) {
-              pFullName.value = profile.full_name;
+            if (profile.full_name) {
+              if (pFullName) pFullName.value = profile.full_name;
+              if (accountNameEl) accountNameEl.textContent = profile.full_name;
             }
           }
         }
