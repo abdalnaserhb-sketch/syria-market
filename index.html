@@ -4281,9 +4281,6 @@
         let myStore = null;
         if (typeof fetchMySellerStoreFromSupabase === "function") {
           myStore = await fetchMySellerStoreFromSupabase();
-        } else if (typeof fetchSellersFromSupabase === "function") {
-          const sellers = await fetchSellersFromSupabase();
-          myStore = Array.isArray(sellers) ? sellers.find(s => String(s.user_id) === String(user.id)) : null;
         }
         if (myStore) {
           sellerId = myStore.id;
@@ -4408,9 +4405,6 @@
       let myStore = null;
       if (typeof fetchMySellerStoreFromSupabase === "function") {
         myStore = await fetchMySellerStoreFromSupabase();
-      } else if (typeof fetchSellersFromSupabase === "function") {
-        const sellers = await fetchSellersFromSupabase();
-        myStore = Array.isArray(sellers) ? sellers.find(s => String(s.user_id) === String(user.id)) : null;
       }
 
       if (myStore) {
