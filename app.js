@@ -253,6 +253,11 @@ async function getCurrentUser() {
   }
 
   try {
+    const { data: sessionData } = await supabaseClient.auth.getSession();
+    if (sessionData?.session?.user) {
+      return sessionData.session.user;
+    }
+
     const { data, error } = await supabaseClient.auth.getUser();
 
     if (error) {
@@ -262,6 +267,34 @@ async function getCurrentUser() {
     return data?.user || null;
   } catch (error) {
     console.error("Get user error:", error);
+    return null;
+  }
+}
+
+/**
+ * Fetch seller store specifically for current authenticated user (user_id = auth.uid())
+ */
+async function fetchMySellerStoreFromSupabase() {
+  if (!supabaseClient) return null;
+
+  try {
+    const user = await getCurrentUser();
+    if (!user) return null;
+
+    const { data, error } = await supabaseClient
+      .from("sellers")
+      .select("*")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (error) {
+      console.warn("fetchMySellerStore warning:", error.message);
+      return null;
+    }
+
+    return data || null;
+  } catch (error) {
+    console.error("fetchMySellerStore exception:", error);
     return null;
   }
 }
@@ -280,12 +313,11 @@ async function updateSellerProduct(productId, updates) {
       return { success: false, error: "يرجى تسجيل الدخول كبائع لتعديل المنتج." };
     }
 
-    // Resolve user's seller_id from database
-    const sellers = await fetchSellersFromSupabase();
-    const myStore = Array.isArray(sellers) ? sellers.find(s => String(s.user_id) === String(user.id)) : null;
+    // Resolve user's seller_id strictly from database using fetchMySellerStoreFromSupabase()
+    const myStore = await fetchMySellerStoreFromSupabase();
 
     if (!myStore) {
-      return { success: false, error: "غير مصرح: لم يتم العثور على متجر لهذا حساب." };
+      return { success: false, error: "غير مصرح: لم يتم العثور على متجر لهذا الحساب." };
     }
 
     // Verify product ownership before updating
@@ -604,10 +636,14 @@ async function registerSellerStore(storeData) {
       throw error;
     }
 
-    // Update profile role to seller
+    // Update profile role, phone, and city for seller
+    const profileUpdates = { id: user.id, role: "seller" };
+    if (storeData.phone) profileUpdates.phone = storeData.phone;
+    if (storeData.city) profileUpdates.city = storeData.city;
+
     await supabaseClient
       .from("profiles")
-      .upsert({ id: user.id, role: "seller" });
+      .upsert(profileUpdates);
 
     return { success: true, data: data };
   } catch (error) {
@@ -631,9 +667,8 @@ async function addSellerProduct(productData) {
       return { success: false, error: "يرجى تسجيل الدخول كبائع لإضافة منتج." };
     }
 
-    // Always resolve seller_id strictly from the database for the authenticated user
-    const sellers = await fetchSellersFromSupabase();
-    const myStore = Array.isArray(sellers) ? sellers.find(s => String(s.user_id) === String(user.id)) : null;
+    // Always resolve seller_id strictly from the database for the authenticated user using fetchMySellerStoreFromSupabase()
+    const myStore = await fetchMySellerStoreFromSupabase();
 
     if (!myStore) {
       return { success: false, error: "لم يتم العثور على متجر مسجل لهذا المستخدم." };
@@ -1015,8 +1050,7 @@ async function fetchSellerAnalytics() {
   if (!user || !supabaseClient) return null;
 
   try {
-    const sellers = await fetchSellersFromSupabase();
-    const myStore = Array.isArray(sellers) ? sellers.find(s => String(s.user_id) === String(user.id)) : null;
+    const myStore = await fetchMySellerStoreFromSupabase();
 
     if (!myStore) return null;
 
