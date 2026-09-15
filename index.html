@@ -3177,12 +3177,17 @@
         if (
           typeof getCurrentUser === "function"
         ) {
-          return await getCurrentUser();
+          const u = await getCurrentUser();
+          if (u) return u;
         }
 
         if (
           typeof supabaseClient !== "undefined"
         ) {
+          const { data: sData } = await supabaseClient.auth.getSession();
+          if (sData?.session?.user) {
+            return sData.session.user;
+          }
 
           const { data } =
             await supabaseClient.auth.getUser();

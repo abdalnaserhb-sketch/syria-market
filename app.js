@@ -253,6 +253,11 @@ async function getCurrentUser() {
   }
 
   try {
+    const { data: sessionData } = await supabaseClient.auth.getSession();
+    if (sessionData?.session?.user) {
+      return sessionData.session.user;
+    }
+
     const { data, error } = await supabaseClient.auth.getUser();
 
     if (error) {
