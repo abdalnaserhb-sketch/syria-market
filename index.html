@@ -3331,10 +3331,12 @@
           if (profile) {
             const pPhone = document.getElementById("profilePhone");
             const pCity = document.getElementById("profileCity");
+            const accountNameEl = document.getElementById("accountName");
             if (pPhone) pPhone.value = profile.phone || "";
             if (pCity) pCity.value = profile.city || "";
-            if (profile.full_name && pFullName) {
-              pFullName.value = profile.full_name;
+            if (profile.full_name) {
+              if (pFullName) pFullName.value = profile.full_name;
+              if (accountNameEl) accountNameEl.textContent = profile.full_name;
             }
           }
         }
@@ -4277,9 +4279,11 @@
 
       const user = await getUserSafe();
       let sellerId = null;
-      if (user && typeof fetchSellersFromSupabase === "function") {
-        const sellers = await fetchSellersFromSupabase();
-        const myStore = Array.isArray(sellers) ? sellers.find(s => s.user_id === user.id) : null;
+      if (user) {
+        let myStore = null;
+        if (typeof fetchMySellerStoreFromSupabase === "function") {
+          myStore = await fetchMySellerStoreFromSupabase();
+        }
         if (myStore) {
           sellerId = myStore.id;
         }
@@ -4400,12 +4404,10 @@
       const registerSec = document.getElementById("sellerRegisterSection");
       const dashboardSec = document.getElementById("sellerDashboardSection");
 
-      let sellers = [];
-      if (typeof fetchSellersFromSupabase === "function") {
-        sellers = await fetchSellersFromSupabase();
+      let myStore = null;
+      if (typeof fetchMySellerStoreFromSupabase === "function") {
+        myStore = await fetchMySellerStoreFromSupabase();
       }
-
-      const myStore = Array.isArray(sellers) ? sellers.find(s => s.user_id === user.id) : null;
 
       if (myStore) {
         if (registerSec) registerSec.style.display = "none";
