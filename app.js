@@ -245,6 +245,132 @@ async function signOut() {
 
 
 /**
+ * Single source of truth for the authenticated session.
+ *
+ * `user` holds the last known authenticated user. It is written only from an
+ * authoritative source (the persisted session, a server-verified lookup, or an
+ * auth state change) so every feature reads the same value.
+ */
+const authState = {
+  user: null
+};
+
+// In-flight resolution, shared by every concurrent caller so that parallel
+// auth reads during page load cannot disagree with each other.
+let authUserRequest = null;
+
+// Bumped whenever the session changes underneath an in-flight resolution, so a
+// slow lookup started before a logout cannot restore the old user afterwards.
+let authStateGeneration = 0;
+
+/**
+ * Supabase can hand back a placeholder user object instead of a real one
+ * (for example when only a partial session was restored). It carries the
+ * `__isUserNotAvailableProxy` marker and throws on every property access, so it
+ * must never be treated as an authenticated user.
+ */
+function isUsableUser(user) {
+  return Boolean(
+    user &&
+    typeof user === "object" &&
+    user.id &&
+    !user.__isUserNotAvailableProxy
+  );
+}
+
+function setAuthUser(user) {
+  authState.user = isUsableUser(user) ? user : null;
+  return authState.user;
+}
+
+function clearAuthUserRequest(request) {
+  if (authUserRequest === request) {
+    authUserRequest = null;
+  }
+}
+
+/**
+ * Auth errors that mean "this session really is gone".
+ * Anything else (offline, timeout, 5xx, gateway error, rate limit) is a
+ * transient failure and must not be mistaken for a signed-out user.
+ */
+const DEFINITIVE_AUTH_FAILURE_CODES = [
+  "session_not_found",
+  "session_expired",
+  "session_missing",
+  "refresh_token_not_found",
+  "refresh_token_already_used",
+  "refresh_token_revoked",
+  "bad_jwt",
+  "invalid_jwt",
+  "invalid_claim",
+  "invalid_grant",
+  "user_not_found",
+  "not_authenticated",
+  "no_authorization"
+];
+
+function isDefinitiveAuthFailure(error) {
+  if (!error) return false;
+
+  const code = String(error.code || error.error_code || "").toLowerCase();
+  if (DEFINITIVE_AUTH_FAILURE_CODES.includes(code)) return true;
+
+  if (error.name === "AuthSessionMissingError") return true;
+
+  // 401 is the only status that unambiguously means the token is not accepted.
+  return Number(error.status) === 401;
+}
+
+/**
+ * Read the authenticated user from the locally persisted session.
+ * Resolves without a network round-trip in the normal case.
+ */
+async function readSessionUser() {
+  const { data, error } = await supabaseClient.auth.getSession();
+
+  if (error) return { user: null, failed: !isDefinitiveAuthFailure(error) };
+
+  const session = data?.session;
+  if (!session) return { user: null, failed: false };
+
+  if (isUsableUser(session.user)) return { user: session.user, failed: false };
+
+  // A session exists but its user object is unusable; let the caller verify it
+  // against the Auth server instead of reporting a signed-out state.
+  return { user: null, failed: true };
+}
+
+/**
+ * Resolve the authenticated user.
+ *
+ * Prefers the locally persisted session (immediate, works offline) and falls
+ * back to a server-verified lookup only when the local user object is missing
+ * or unusable. A transient failure keeps the last known user rather than
+ * reporting the user as signed out.
+ */
+async function resolveCurrentUser() {
+  const generation = authStateGeneration;
+
+  const session = await readSessionUser();
+  if (session.user) return setAuthUser(session.user);
+  if (!session.failed) return setAuthUser(null);
+  if (generation !== authStateGeneration) return authState.user;
+
+  try {
+    const { data, error } = await supabaseClient.auth.getUser();
+    if (generation !== authStateGeneration) return authState.user;
+    if (!error) return setAuthUser(data?.user || null);
+    if (isDefinitiveAuthFailure(error)) return setAuthUser(null);
+  } catch (error) {
+    if (generation !== authStateGeneration) return authState.user;
+    if (isDefinitiveAuthFailure(error)) return setAuthUser(null);
+  }
+
+  return authState.user;
+}
+
+/**
  * Get current authenticated user
  */
 async function getCurrentUser() {
@@ -252,33 +378,38 @@ async function getCurrentUser() {
     return null;
   }
 
-  try {
-    const { data: sessionData } = await supabaseClient.auth.getSession();
-    if (sessionData?.session?.user) {
-      return sessionData.session.user;
-    }
+  if (!authUserRequest) {
+    const request = resolveCurrentUser().catch(function (error) {
+      console.error("Get user error:", error);
+      return authState.user;
+    });
 
-    const { data, error } = await supabaseClient.auth.getUser();
-
-    if (error) {
-      return null;
-    }
-
-    return data?.user || null;
-  } catch (error) {
-    console.error("Get user error:", error);
-    return null;
+    authUserRequest = request;
+    // Clear only if this is still the shared request, so a session change that
+    // already started a newer resolution is not discarded.
+    request.then(clearAuthUserRequest, clearAuthUserRequest);
   }
+
+  return authUserRequest;
+}
+
+/**
+ * Restore the persisted session. Every auth-gated feature resolves through here,
+ * so the work is shared rather than repeated per feature.
+ */
+async function initAuthSession() {
+  return getCurrentUser();
 }
 
 /**
  * Fetch seller store specifically for current authenticated user (user_id = auth.uid())
+ * Accepts an already-resolved user so the caller and the query use the same identity.
  */
-async function fetchMySellerStoreFromSupabase() {
+async function fetchMySellerStoreFromSupabase(knownUser) {
   if (!supabaseClient) return null;
 
   try {
-    const user = await getCurrentUser();
+    const user = knownUser || (await getCurrentUser());
     if (!user) return null;
 
     const { data, error } = await supabaseClient
@@ -1175,6 +1306,18 @@ function parseProductCSV(csvText) {
 if (supabaseClient) {
   supabaseClient.auth.onAuthStateChange(function (event, session) {
     console.log("Syria Market auth event:", event);
+
+    // Keep the shared auth state authoritative. A stale token that only fails
+    // the server-side check must not be recorded as an authenticated user.
+    if (event === "SIGNED_OUT") {
+      authStateGeneration++;
+      authUserRequest = null;
+      setAuthUser(null);
+    } else if (session && isUsableUser(session.user)) {
+      authStateGeneration++;
+      authUserRequest = null;
+      setAuthUser(session.user);
+    }
 
     if (typeof window.updateUserStatus === "function") {
       window.updateUserStatus();
