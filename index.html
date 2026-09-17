@@ -2013,7 +2013,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <!-- ملف الاتصال الموجود لديك -->
-<script src="app.js?v=2"></script>
+<script src="app.js?v=3"></script>
 
   <script>
     /* =====================================================
@@ -3170,28 +3170,17 @@
     }
 
 
+    /**
+     * Read the authenticated user for any feature that requires one.
+     * Delegates to app.js so the whole page shares a single resolved identity.
+     */
     async function getUserSafe() {
-
       try {
-
-        if (
-          typeof getCurrentUser === "function"
-        ) {
+        if (typeof getCurrentUser === "function") {
           return await getCurrentUser();
         }
-
-        if (
-          typeof supabaseClient !== "undefined"
-        ) {
-
-          const { data } =
-            await supabaseClient.auth.getUser();
-
-          return data?.user || null;
-        }
-
       } catch (error) {
-        console.error(error);
+        console.error("getUserSafe error:", error);
       }
 
       return null;
@@ -4282,7 +4271,9 @@
       if (user) {
         let myStore = null;
         if (typeof fetchMySellerStoreFromSupabase === "function") {
-          myStore = await fetchMySellerStoreFromSupabase();
+          // Pass the resolved user so the store lookup uses the same identity
+          // that passed the authentication check above.
+          myStore = await fetchMySellerStoreFromSupabase(user);
         }
         if (myStore) {
           sellerId = myStore.id;
@@ -4406,7 +4397,8 @@
 
       let myStore = null;
       if (typeof fetchMySellerStoreFromSupabase === "function") {
-        myStore = await fetchMySellerStoreFromSupabase();
+        // Scope the store lookup to the user that passed the check above.
+        myStore = await fetchMySellerStoreFromSupabase(user);
       }
 
       if (myStore) {
@@ -4462,6 +4454,12 @@
     document.addEventListener(
       "DOMContentLoaded",
       async function () {
+
+        // Restore the persisted session before anything reads the current user,
+        // so the first auth-gated interaction never sees a signed-out state.
+        if (typeof initAuthSession === "function") {
+          await initAuthSession();
+        }
 
         loadCart();
 
