@@ -110,8 +110,24 @@ async function signUp(email, password, fullName = "") {
       }
     }
 
+    // Supabase returns a user object whether or not a usable session was
+    // created. When email confirmation is enabled there is no session yet, so
+    // `data.user` alone must never be treated as "signed in". The presence of a
+    // session is the only thing that makes the caller authenticated.
+    const session = data?.session;
+    const hasSession = Boolean(session && isUsableUser(session.user));
+
+    if (hasSession) {
+      // Adopt the new session synchronously so every auth-gated feature sees
+      // the same identity before any status refresh runs.
+      authStateGeneration++;
+      authUserRequest = null;
+      setAuthUser(session.user);
+    }
+
     return {
       success: true,
+      hasSession: hasSession,
       data: data
     };
   } catch (error) {
@@ -353,9 +369,15 @@ async function resolveCurrentUser() {
   const generation = authStateGeneration;
 
   const session = await readSessionUser();
+
+  // A session change can land while the read is in flight (for example the
+  // SIGNED_IN event fired by a successful sign up). That event is newer and
+  // authoritative, so a result produced from an older snapshot must never
+  // overwrite it, in either direction.
+  if (generation !== authStateGeneration) return authState.user;
+
   if (session.user) return setAuthUser(session.user);
   if (!session.failed) return setAuthUser(null);
-  if (generation !== authStateGeneration) return authState.user;
 
   try {
     const { data, error } = await supabaseClient.auth.getUser();
@@ -1319,8 +1341,14 @@ if (supabaseClient) {
       setAuthUser(session.user);
     }
 
+    // Refresh the header, but never from inside this callback. Supabase runs it
+    // while holding its internal auth lock, so awaiting getUser() here could
+    // deadlock (notably right after a sign up). Deferring also lets a burst of
+    // events settle on the final state instead of repainting per event.
     if (typeof window.updateUserStatus === "function") {
-      window.updateUserStatus();
+      setTimeout(function () {
+        window.updateUserStatus();
+      }, 0);
     }
   });
 }

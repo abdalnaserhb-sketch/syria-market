@@ -3149,11 +3149,27 @@
             throw new Error(result.error);
           }
 
-          message.textContent =
-            "تم إنشاء الحساب. إذا كان تأكيد البريد مفعلاً، تحقق من بريدك الإلكتروني.";
+          if (result.hasSession) {
+            // A real session was created, so the user is genuinely signed in.
+            message.textContent =
+              "تم إنشاء الحساب وتسجيل الدخول بنجاح.";
+            message.className =
+              "auth-message success";
 
-          message.className =
-            "auth-message success";
+            await updateUserStatus();
+
+            setTimeout(() => {
+              closeModal("authModal");
+            }, 700);
+          } else {
+            // No session yet: email confirmation is required. Do not claim the
+            // user is signed in, and leave the auth state untouched.
+            message.textContent =
+              "تم إنشاء حسابك. يرجى تأكيد بريدك الإلكتروني لتسجيل الدخول.";
+            message.className =
+              "auth-message success";
+          }
+
         }
 
       } catch (error) {
