@@ -38,9 +38,10 @@ try {
  */
 function translateAuthError(errorMessage) {
   if (!errorMessage) return "حدث خطأ غير متوقع.";
-  const msg = String(errorMessage).toLowerCase();
+  const rawMsg = typeof errorMessage === "object" && errorMessage.message ? errorMessage.message : String(errorMessage);
+  const msg = rawMsg.toLowerCase();
 
-  if (msg.includes("invalid login credentials") || msg.includes("invalid_grant")) {
+  if (msg.includes("invalid login credentials") || msg.includes("invalid_grant") || msg.includes("invalid credentials")) {
     return "البريد الإلكتروني أو كلمة المرور غير صحيحة.";
   }
   if (msg.includes("email not confirmed")) {
@@ -55,10 +56,16 @@ function translateAuthError(errorMessage) {
   if (msg.includes("rate limit") || msg.includes("too many requests")) {
     return "تم تجاوز حد المحاولات. يرجى الانتظار دقيقة ثم المحاولة مجدداً.";
   }
-  if (msg.includes("network") || msg.includes("fetch")) {
-    return "تعذر الاتصال بالشبكة. يرجى التحقق من اتصالك بالإنترنت.";
+  if (msg.includes("permission") || msg.includes("row-level security") || msg.includes("rls") || msg.includes("not allowed") || msg.includes("42501") || msg.includes("pgrst301")) {
+    return "ليس لديك الصلاحية الكافية لإجراء هذه العملية.";
   }
-  return errorMessage;
+  if (msg.includes("network") || msg.includes("fetch") || msg.includes("failed to fetch")) {
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      return "تعذر الاتصال بالشبكة. يرجى التحقق من اتصالك بالإنترنت.";
+    }
+    return "تعذر الاتصال بخادم الخدمة. يرجى التحقق من إعدادات الاتصال أو المحاولة لاحقاً.";
+  }
+  return rawMsg;
 }
 
 /**
